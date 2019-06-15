@@ -61,14 +61,19 @@ outfile = open("./LeagueData.csv", "w")
 writer = csv.writer(outfile)
 writer.writerow(['Date', 'Team 1', 'Team 2', 'First Blood', 'First Dragon', 'First Turret', 'First Inhibitor', 'First Baron', 'Winner', 'Loser'])
 
-for link in [matchHistoryLinks[0], matchHistoryLinks[1]]:
+for link in matchHistoryLinks:
     page_source = get_page_source(link, 3)
 
     soup = BeautifulSoup(page_source, 'html.parser')
 
+   # print('Testing here')
+   # print(soup.find('div', attrs={"id": "champion-nameplate-138"}).text)
+
     gameDate = soup.find("div", {"id": "binding-699"}).text # Date the match was played
-    team1 = (soup.find('div', attrs={'id':'binding-739'}).text).split() # Team 1 name
-    team2 = (soup.find('div', attrs={'id':'binding-881'}).text).split() # Team 2 name
+    #team1 = (soup.find('div', attrs={'id':'binding-739'}).text).split() # Team 1 name
+    #team2 = (soup.find('div', attrs={'id':'binding-881'}).text).split() # Team 2 name
+    team1 = (soup.find('div', attrs={"id": "champion-nameplate-16"}).text).split() # Team 1 name
+    team2 = (soup.find('div', attrs={"id": "champion-nameplate-138"}).text).split() # Team 2 name
     gameWinner = soup.find('div', attrs={'class':'game-conclusion'}).text # Winner/Loser
 
     if str(gameWinner.strip()) in 'VICTORY':
@@ -90,12 +95,6 @@ for link in [matchHistoryLinks[0], matchHistoryLinks[1]]:
     turretData = turretData = [e for e in objectiveData if "turret" in e]
     inhibitorData = [d for d in objectiveData if "inhibitor" in d]
 
-    # print(*riftheraldData, sep = "\n")
-    # print(*dragonData, sep = "\n")
-    # print(*baronData, sep = "\n")
-    # print(*inhibitorData, sep = "\n")
-    # print(*turretData, sep = "\n")
-
     # First Blood
     collectStatistics = []
 
@@ -111,11 +110,25 @@ for link in [matchHistoryLinks[0], matchHistoryLinks[1]]:
     else:
         firstBlood = team2[0].strip()
 
+    if not dragonData:
+        firstDragon = ' '
+    else: 
+        firstDragon = process_data(dragonData, team1, team2)
 
-    firstDragon = process_data(dragonData, team1, team2)
-    firstTurret = process_data(turretData, team1, team2)
-    firstBaron = process_data(baronData, team1, team2)
-    firstInhibitor = process_data(inhibitorData, team1, team2)
+    if not turretData:
+        firstTurret = ' '
+    else:
+        firstTurret = process_data(turretData, team1, team2)
+    
+    if not baronData:
+        firstBaron = ' '
+    else:
+        firstBaron = process_data(baronData, team1, team2)
+
+    if not inhibitorData:
+        firstInhibitor = ' '
+    else:
+        firstInhibitor = process_data(inhibitorData, team1, team2)
 
     # Append to file
     gameData = []
@@ -127,9 +140,11 @@ for link in [matchHistoryLinks[0], matchHistoryLinks[1]]:
     # print('First Blood')
     # print(firstDragon[0].strip())
     # print(firstTurret[0].strip())
+    # print(inhibitorData)
     # print(firstInhibitor[0].strip())
+    # print(baronData)
     # print(firstBaron[0].strip())
-    # print(gameResults[0].strip())
+    # print(gameWinner[0].strip())
 
     try:
         gameData.append([gameDate.strip(), team1[0].strip(), team2[0].strip(), firstBlood, firstDragon[0].strip(), firstTurret[0].strip(), firstInhibitor[0].strip(), firstBaron[0].strip(), gameWinner[0].strip(), gameLoser[0].strip()])
