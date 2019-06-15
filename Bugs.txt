@@ -1,0 +1,9 @@
+If no baron it puts the previous teams baron
+
+Get First Blood and First Tower better
+
+If inhibitor or objectives taken at the same time they stack and cant be detected	
+
+Date format sometimes swaps if switching between euw.matchhistory and na.matchhistory
+
+Index out of bounds error on team name rarely
