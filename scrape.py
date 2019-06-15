@@ -41,8 +41,9 @@ def process_data(split_objective_data, blue_team, red_team):
 
 # This section locates all of the match history links
 #url = 'https://lol.gamepedia.com/LCS/2019_Season/Summer_Season'
-#url = 'https://lol.gamepedia.com/LEC/2019_Season/Spring_Season'
-url = 'https://lol.gamepedia.com/LMS/2019_Season/Summer_Season'
+url = 'https://lol.gamepedia.com/LEC/2019_Season/Spring_Season'
+#url = 'https://lol.gamepedia.com/LMS/2019_Season/Summer_Season'
+#url = 'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season'
 response = requests.get(url)
 html = response.content
 
@@ -58,7 +59,7 @@ for link in soup.find_all('a', attrs={'href': re.compile("matchhistory")}):
 #This section retrieves data from each match history link
 outfile = open("./LeagueData.csv", "w")
 writer = csv.writer(outfile)
-writer.writerow(['Date', 'Team 1', 'Team 2', 'First Blood', 'First Dragon', 'First Turret', 'First Inhibitor', 'First Baron', 'Result of Team 1'])
+writer.writerow(['Date', 'Team 1', 'Team 2', 'First Blood', 'First Dragon', 'First Turret', 'First Inhibitor', 'First Baron', 'Winner', 'Loser'])
 
 for link in [matchHistoryLinks[0], matchHistoryLinks[1]]:
     page_source = get_page_source(link, 3)
@@ -68,12 +69,14 @@ for link in [matchHistoryLinks[0], matchHistoryLinks[1]]:
     gameDate = soup.find("div", {"id": "binding-699"}).text # Date the match was played
     team1 = (soup.find('div', attrs={'id':'binding-739'}).text).split() # Team 1 name
     team2 = (soup.find('div', attrs={'id':'binding-881'}).text).split() # Team 2 name
-    gameResults = soup.find('div', attrs={'class':'game-conclusion'}).text # Winner/Loser
+    gameWinner = soup.find('div', attrs={'class':'game-conclusion'}).text # Winner/Loser
 
-    if str(gameResults.strip()) in 'VICTORY':
-        gameResults = team1
+    if str(gameWinner.strip()) in 'VICTORY':
+        gameWinner = team1
+        gameLoser = team2
     else:
-        gameResults = team2
+        gameWinner = team2
+        gameLoser = team1
 
     # Obtain dragon, turret, and first blood info
     objectiveData = []
@@ -129,7 +132,7 @@ for link in [matchHistoryLinks[0], matchHistoryLinks[1]]:
     # print(gameResults[0].strip())
 
     try:
-        gameData.append([gameDate.strip(), team1[0].strip(), team2[0].strip(), firstBlood, firstDragon[0].strip(), firstTurret[0].strip(), firstInhibitor[0].strip(), firstBaron[0].strip(), gameResults[0].strip()])
+        gameData.append([gameDate.strip(), team1[0].strip(), team2[0].strip(), firstBlood, firstDragon[0].strip(), firstTurret[0].strip(), firstInhibitor[0].strip(), firstBaron[0].strip(), gameWinner[0].strip(), gameLoser[0].strip()])
     except IndexError:
         gameData.append(['Index out of bound error'])
         print('index out of bounds error')

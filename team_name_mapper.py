@@ -49,8 +49,19 @@ def create_game():
 def process_game(game):
 	game_data = create_game()
 	data = game.split(',')
-	
-	game_data['first_blood_team_id'] = get_team_id_by_name(data[1]
+	game_data['first_blood_team_id'] = get_team_id_by_name(data[3])
+	game_data['first_turret_team_id'] = get_team_id_by_name(data[5])	
+	game_data['first_dragon_team_id'] = get_team_id_by_name(data[4])
+	game_data['first_baron_team_id'] = get_team_id_by_name(data[7])
+	game_data['winner_id'] = get_team_id_by_name(data[8])
+	game_data['loser_id'] = get_team_id_by_name(data[9])
+	game_data['red_side_team_id'] = get_team_id_by_name(data[2])
+	game_data['blue_side_team_id'] = get_team_id_by_name(data[1])
+	game_data['game_number'] = 1
+	game_data['date'] = data[0]
+	game_data['league_id'] = 2
+	game_data['split_id'] = 2
+	return game_data
 
 
 

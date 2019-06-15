@@ -1,0 +1,10 @@
+{
+  "game": {
+    "blue_side_team_id": 1,
+    "red_side_team_id": 2,
+    "game_number": 1,
+    "split_id": 2,
+    "league_id": 2,
+    "date": "2019-06-06 11:11:11"
+  }
+}
