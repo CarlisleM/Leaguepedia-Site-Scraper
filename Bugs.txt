@@ -1,3 +1,5 @@
+Bugs/To Do List
+
 If no baron it puts the previous teams baron
 
 First Tower better
@@ -8,4 +10,8 @@ Date format sometimes swaps if switching between euw.matchhistory and na.matchhi
 
 Index out of bounds error on team name rarely
 
-Adjust sleep timer, try and make it lower but wait for data if data is missing (sometimes does not load in time)
+Adjust sleep timer, try and make it lower but wait for data if data is missing (sometimes does not load in time) - Maybe wait for a particular element I know loads last to be loaded
+
+Dont collect already collected data - cross reference with data base so running the scraper only gives new data and saves time
+
+Check if certain elements aexist before beginning as some do not have history (rare), maybe wait for all elements to load but if they dont after x (10?) seconds proceed to the next match
