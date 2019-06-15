@@ -6,24 +6,35 @@ import sys
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
+def get_page_source(link, time_to_sleep):
+    options = webdriver.ChromeOptions()
+    options.add_argument('--ignore-certificate-errors')
+    options.add_argument('--incognito')
+    options.add_argument('--headless')
+    driverLocation = str(sys.argv[1])
+    driver = webdriver.Chrome(executable_path=driverLocation, options=options)
+
+    driver.get(link)
+    time.sleep(time_to_sleep) # Allows the dynamic data on the page to load
+    return driver.page_source
 
 def process_data(split_objective_data, blue_team, red_team):
-    splitDragonData = []
+    split_data = []
 
     for entries in split_objective_data:
-        splitDragonData.append(entries.split())
+        split_data.append(entries.split())
 
     counter = 0
-    dragonTimer = []
+    objective_timer = []
 
-    for rows in splitDragonData:
-        dragonTimer.append([re.sub("[^0-9.]", "", splitDragonData[counter][4]), re.sub("[^0-9.]", "", splitDragonData[counter][6])])
+    for rows in split_data:
+        objective_timer.append([re.sub("[^0-9.]", "", split_data[counter][4]), re.sub("[^0-9.]", "", split_data[counter][6])])
         counter = counter+1
 
-    for i in dragonTimer:
-        if i[0] == min(x[0] for x in dragonTimer):
-            firstDragon = int(i[1])
-            if firstDragon == 0:
+    for i in objective_timer:
+        if i[0] == min(x[0] for x in objective_timer):
+            first_objective = int(i[1])
+            if first_objective == 0:
                 return blue_team
             else:
                 return red_team
@@ -49,19 +60,8 @@ outfile = open("./LeagueData.csv", "w")
 writer = csv.writer(outfile)
 writer.writerow(['Date', 'Team 1', 'Team 2', 'First Blood', 'First Dragon', 'First Turret', 'First Inhibitor', 'First Baron', 'Result of Team 1'])
 
-for link in [matchHistoryLinks[0]]:
-    options = webdriver.ChromeOptions()
-    options.add_argument('--ignore-certificate-errors')
-    options.add_argument('--incognito')
-    options.add_argument('--headless')
-    driverLocation = str(sys.argv[1])
-    print(driverLocation)
-    driver = webdriver.Chrome(executable_path=driverLocation, options=options)
-
-
-    driver.get(link)
-    time.sleep(3) # Allows the dynamic data on the page to load
-    page_source = driver.page_source
+for link in [matchHistoryLinks[0], matchHistoryLinks[1]]:
+    page_source = get_page_source(link, 3)
 
     soup = BeautifulSoup(page_source, 'html.parser')
 
