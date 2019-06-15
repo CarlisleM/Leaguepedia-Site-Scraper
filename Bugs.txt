@@ -1,6 +1,6 @@
 If no baron it puts the previous teams baron
 
-Get First Blood and First Tower better
+First Tower better
 
 If inhibitor or objectives taken at the same time they stack and cant be detected	
 

@@ -7,8 +7,8 @@ from selenium import webdriver
 
 # This section locates all of the match history links
 #url = 'https://lol.gamepedia.com/LCS/2019_Season/Summer_Season'
-url = 'https://lol.gamepedia.com/LEC/2019_Season/Spring_Season'
-#url = 'https://lol.gamepedia.com/LMS/2019_Season/Summer_Season'
+#url = 'https://lol.gamepedia.com/LEC/2019_Season/Spring_Season'
+url = 'https://lol.gamepedia.com/LMS/2019_Season/Summer_Season'
 response = requests.get(url)
 html = response.content
 
@@ -68,6 +68,23 @@ for link in matchHistoryLinks:
 	print(*baronData, sep = "\n")
 	print(*inhibitorData, sep = "\n")
 	print(*turretData, sep = "\n")
+
+	# First Blood
+	collectStatistics = []
+
+	rows = soup.find_all('tr')
+	for row in rows:          # Print all occurrences
+		collectStatistics.append(row.get_text())
+
+	determineFB = re.sub(r'[a-zA-Z]+', '', collectStatistics[5], re.I)
+	firstBlood = determineFB.split('●')[0]
+
+	if int(firstBlood.count('○')) < 5:
+		firstBlood = team1[0].strip()
+	else:
+		firstBlood = team2[0].strip()
+
+	print(firstBlood + " got first blood")
 
 	# Dragon
 	splitDragonData = []
@@ -168,7 +185,7 @@ for link in matchHistoryLinks:
 	# print(gameResults[0].strip())
 
 	try:
-		gameData.append([gameDate.strip(), team1[0].strip(), team2[0].strip(), 'First Blood', firstDragon[0].strip(), firstTurret[0].strip(), firstInhibitor[0].strip(), firstBaron[0].strip(), gameResults[0].strip()])
+		gameData.append([gameDate.strip(), team1[0].strip(), team2[0].strip(), firstBlood, firstDragon[0].strip(), firstTurret[0].strip(), firstInhibitor[0].strip(), firstBaron[0].strip(), gameResults[0].strip()])
 		print(gameData)
 	except IndexError:
 		gameData.append(['Index out of bound error'])
