@@ -1,4 +1,4 @@
-Bugs/To Do List
+https://lck-tracking.herokuapp.com/api/v1/teamsBugs/To Do List
 
 If no baron it puts the previous teams baron
 

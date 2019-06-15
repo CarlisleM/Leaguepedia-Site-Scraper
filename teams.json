@@ -1,0 +1,268 @@
+[
+   {
+      "name" : "Griffin",
+      "createdAt" : "2019-06-12T11:12:32.302Z",
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T11:12:32.302Z",
+      "id" : 1
+   },
+   {
+      "id" : 2,
+      "createdAt" : "2019-06-12T11:12:50.110Z",
+      "name" : "SANDBOX Gaming",
+      "updatedAt" : "2019-06-12T11:12:50.110Z",
+      "leagueId" : null
+   },
+   {
+      "name" : "Gen.G",
+      "createdAt" : "2019-06-12T11:13:04.264Z",
+      "updatedAt" : "2019-06-12T11:13:04.264Z",
+      "leagueId" : null,
+      "id" : 3
+   },
+   {
+      "createdAt" : "2019-06-12T11:13:26.232Z",
+      "name" : "Jin Air Green Wings",
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T11:13:26.232Z",
+      "id" : 4
+   },
+   {
+      "updatedAt" : "2019-06-12T11:13:40.557Z",
+      "leagueId" : null,
+      "name" : "KINGZONE DragonX",
+      "createdAt" : "2019-06-12T11:13:40.557Z",
+      "id" : 5
+   },
+   {
+      "updatedAt" : "2019-06-12T11:13:50.960Z",
+      "leagueId" : null,
+      "name" : "SK Telecom T1",
+      "createdAt" : "2019-06-12T11:13:50.960Z",
+      "id" : 6
+   },
+   {
+      "createdAt" : "2019-06-12T11:14:04.595Z",
+      "name" : "KT Rolster",
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T11:14:04.595Z",
+      "id" : 7
+   },
+   {
+      "id" : 8,
+      "name" : "DAMWON Gaming",
+      "createdAt" : "2019-06-12T11:14:19.247Z",
+      "updatedAt" : "2019-06-12T11:14:19.247Z",
+      "leagueId" : null
+   },
+   {
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T11:14:46.857Z",
+      "name" : "Hanwha Life Esports",
+      "createdAt" : "2019-06-12T11:14:46.857Z",
+      "id" : 9
+   },
+   {
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T11:15:04.647Z",
+      "createdAt" : "2019-06-12T11:15:04.647Z",
+      "name" : "Afreeca Freecs",
+      "id" : 10
+   },
+   {
+      "id" : 11,
+      "name" : "Misfits",
+      "createdAt" : "2019-06-12T13:44:48.674Z",
+      "updatedAt" : "2019-06-12T13:44:48.674Z",
+      "leagueId" : null
+   },
+   {
+      "name" : "Excel Esports",
+      "createdAt" : "2019-06-12T13:45:04.961Z",
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T13:45:04.961Z",
+      "id" : 12
+   },
+   {
+      "id" : 13,
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T13:45:29.989Z",
+      "createdAt" : "2019-06-12T13:45:29.989Z",
+      "name" : "Rogue"
+   },
+   {
+      "id" : 14,
+      "name" : "Team Vitality",
+      "createdAt" : "2019-06-12T13:45:41.843Z",
+      "updatedAt" : "2019-06-12T13:45:41.843Z",
+      "leagueId" : null
+   },
+   {
+      "id" : 15,
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T13:45:57.000Z",
+      "createdAt" : "2019-06-12T13:45:57.000Z",
+      "name" : "Fnatic"
+   },
+   {
+      "id" : 16,
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T13:46:04.968Z",
+      "name" : "Origen",
+      "createdAt" : "2019-06-12T13:46:04.968Z"
+   },
+   {
+      "id" : 18,
+      "createdAt" : "2019-06-12T13:46:57.098Z",
+      "name" : "G2 Esports",
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T13:46:57.098Z"
+   },
+   {
+      "id" : 19,
+      "name" : "SK Gaming",
+      "createdAt" : "2019-06-12T13:47:21.821Z",
+      "updatedAt" : "2019-06-12T13:47:21.821Z",
+      "leagueId" : null
+   },
+   {
+      "name" : "Splyce",
+      "createdAt" : "2019-06-12T13:47:39.567Z",
+      "updatedAt" : "2019-06-12T13:47:39.567Z",
+      "leagueId" : null,
+      "id" : 20
+   },
+   {
+      "name" : "Chiefs Esports Club",
+      "createdAt" : "2019-06-12T14:06:00.030Z",
+      "updatedAt" : "2019-06-12T14:06:00.030Z",
+      "id" : 21
+   },
+   {
+      "updatedAt" : "2019-06-12T14:06:08.734Z",
+      "leagueId" : null,
+      "createdAt" : "2019-06-12T14:06:08.734Z",
+      "name" : "Gravitas",
+      "id" : 22
+   },
+   {
+      "id" : 23,
+      "name" : "Avant Gaming",
+      "createdAt" : "2019-06-12T14:06:17.986Z",
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T14:06:17.986Z"
+   },
+   {
+      "id" : 24,
+      "updatedAt" : "2019-06-12T14:06:24.188Z",
+      "leagueId" : null,      "leagueId" : null,
+
+      "name" : "Legacy",
+      "createdAt" : "2019-06-12T14:06:24.188Z"
+   },
+   {
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T14:06:33.721Z",
+      "createdAt" : "2019-06-12T14:06:33.721Z",
+      "name" : "Dire Wolves",
+      "id" : 25
+   },
+   {
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T14:06:41.425Z",
+      "createdAt" : "2019-06-12T14:06:41.425Z",
+      "name" : "ORDER",
+      "id" : 26
+   },
+   {
+      "id" : 27,
+      "createdAt" : "2019-06-12T14:06:52.794Z",
+      "name" : "MAMMOTH",
+      "updatedAt" : "2019-06-12T14:06:52.794Z",
+      "leagueId" : null
+   },
+   {
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T14:07:00.891Z",
+      "createdAt" : "2019-06-12T14:07:00.891Z",
+      "name" : "Bombers",
+      "id" : 28
+   },
+   {
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T14:26:15.047Z",
+      "createdAt" : "2019-06-12T14:26:15.047Z",
+      "name" : "MAD Lions",
+      "id" : 29
+   },
+   {
+      "createdAt" : "2019-06-12T14:26:26.623Z",
+      "name" : "Penguins",
+      "updatedAt" : "2019-06-12T14:26:26.623Z",
+      "leagueId" : null,
+      "id" : 30
+   },
+   {
+      "id" : 31,
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T14:26:37.076Z",
+      "name" : "eMonkeyz",
+      "createdAt" : "2019-06-12T14:26:37.076Z"
+   },
+   {
+      "createdAt" : "2019-06-12T14:26:46.713Z",
+      "name" : "Movistar Riders",
+      "updatedAt" : "2019-06-12T14:26:46.713Z",
+      "leagueId" : null,
+      "id" : 32
+   },
+   {
+      "createdAt" : "2019-06-12T14:26:57.593Z",
+      "name" : "G2 Heretics",
+      "updatedAt" : "2019-06-12T14:26:57.593Z",
+      "leagueId" : null,
+      "id" : 33
+   },
+   {
+      "name" : "Origen BCN",
+      "createdAt" : "2019-06-12T14:27:07.600Z",
+      "updatedAt" : "2019-06-12T14:27:07.600Z",
+      "leagueId" : null,
+      "id" : 34
+   },
+   {
+      "id" : 35,
+      "createdAt" : "2019-06-12T14:27:17.646Z",
+      "name" : "S2V Esports",
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T14:27:17.646Z"
+   },
+   {
+      "name" : "Team Queso",
+      "createdAt" : "2019-06-12T14:27:26.528Z",
+      "updatedAt" : "2019-06-12T14:27:26.528Z",
+      "leagueId" : null,
+      "id" : 36
+   },
+   {
+      "id" : 37,
+      "name" : "x6tence",
+      "createdAt" : "2019-06-12T14:27:34.021Z",
+      "leagueId" : null,
+      "updatedAt" : "2019-06-12T14:27:34.021Z"
+   },
+   {
+      "updatedAt" : "2019-06-12T14:27:43.674Z",
+      "leagueId" : null,
+      "createdAt" : "2019-06-12T14:27:43.674Z",
+      "name" : "Vodafone Giants",
+      "id" : 38
+   },
+   {
+      "createdAt" : "2019-06-12T13:46:39.986Z",
+      "name" : "Schalke 04",
+      "updatedAt" : "2019-06-13T08:44:24.540Z",
+      "leagueId" : null,
+      "id" : 17
+   }
+]

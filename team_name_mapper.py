@@ -27,8 +27,35 @@ def get_team_id_by_name(short_name):
 		for team in data:
 			#print(team)
 			if currentTeam == team['name']:
-				print(currentTeam)
 				return team['id']
 
+
+def create_game():
+	return {
+          'first_blood_team_id' : None,
+          'first_turret_team_id' : None,
+          'first_dragon_team_id' : None,
+          'first_baron_team_id' : None,
+          'winner_id' : None,
+          'loser_id' : None,
+          'red_side_team_id' : None,
+          'blue_side_team_id' : None,
+          'game_number' : None,
+          'date' : None,
+          'league_id' : None,
+          'split_id' : None,
+	}
+
+def process_game(game):
+	game_data = create_game()
+	data = game.split(',')
 	
+	game_data['first_blood_team_id'] = get_team_id_by_name(data[1]
+
+
+
+
+
+
+
 
