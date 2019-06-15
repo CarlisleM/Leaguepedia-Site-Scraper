@@ -84,8 +84,6 @@ for link in matchHistoryLinks:
 	else:
 		firstBlood = team2[0].strip()
 
-	print(firstBlood + " got first blood")
-
 	# Dragon
 	splitDragonData = []
 

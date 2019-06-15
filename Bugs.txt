@@ -7,3 +7,5 @@ If inhibitor or objectives taken at the same time they stack and cant be detecte
 Date format sometimes swaps if switching between euw.matchhistory and na.matchhistory
 
 Index out of bounds error on team name rarely
+
+Adjust sleep timer, try and make it lower but wait for data if data is missing (sometimes does not load in time)
