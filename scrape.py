@@ -2,6 +2,7 @@ import csv
 import requests
 import re
 import time
+import sys
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
@@ -19,6 +20,7 @@ print('Starting the scraper')
 matchHistoryLinks = []
 
 for link in soup.find_all('a', attrs={'href': re.compile("matchhistory")}):
+    print("Rnning app")
     matchHistoryLinks.append(link.get('href'))
 
 #This section retrieves data from each match history link
@@ -31,7 +33,10 @@ for link in matchHistoryLinks:
 	options.add_argument('--ignore-certificate-errors')
 	options.add_argument('--incognito')
 	options.add_argument('--headless')
-	driver = webdriver.Chrome("E:/chromedriver_win32/chromedriver", chrome_options=options)
+	driverLocation = str(sys.argv[1])
+	print(driverLocation)
+	driver = webdriver.Chrome(executable_path=driverLocation, chrome_options=options)
+
 
 	driver.get(link)
 	time.sleep(3) # Allows the dynamic data on the page to load
