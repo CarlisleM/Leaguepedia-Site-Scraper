@@ -3,6 +3,7 @@ import requests
 import re
 import time
 import sys
+import json
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -54,6 +55,17 @@ def process_data(split_objective_data, blue_team, red_team):
                 return blue_team
             else:
                 return red_team
+
+def check_if_match_exists (dateOfMatch, blueTeam, redTeam):
+    with open('gamesPlayed.json') as json_file:
+        data = json.load(json_file)
+        #print(data)
+        for game in data:
+            db_date = ((game['date'].split('T', 1)[0]).split("-"))        
+            db_date = ('/'.join(db_date))
+            if (db_date == dateOfMatch) and ((game['teams'][0]['name'] == blueTeam) or (game['teams'][1]['name'] == blueTeam)) and ((game['teams'][0]['name'] == redTeam) or (game['teams'][1]['name'] == redTeam)):
+                does_exist = True
+                return does_exist
 
 # This section locates all of the match history links
 url = 'https://lol.gamepedia.com/LCS/2019_Season/Summer_Season'
