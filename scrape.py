@@ -23,9 +23,10 @@ def get_page_source(link):
 
     driver.get(link)
 
-    wait = 5 # seconds
+    wait = 10 # seconds
     try:
-        wait_for_graph = WebDriverWait(driver, wait).until(EC.presence_of_element_located((By.ID, 'event-graph-987')))
+        #wait_for_graph = WebDriverWait(driver, wait).until(EC.presence_of_element_located((By.ID, 'event-graph-987')))
+        wait_for_graph = WebDriverWait(driver, wait).until(EC.presence_of_element_located((By.CLASS_NAME, 'event-graph')))
         page_loaded = 'ready'
     except TimeoutException:
         page_loaded = 'not ready'
@@ -55,15 +56,14 @@ def process_data(split_objective_data, blue_team, red_team):
                 return red_team
 
 # This section locates all of the match history links
-#url = 'https://lol.gamepedia.com/LCS/2019_Season/Summer_Season'
-#url = 'https://lol.gamepedia.com/LEC/2019_Season/Spring_Season'
-#url = 'https://lol.gamepedia.com/OPL/2019_Season/Split_1'
+url = 'https://lol.gamepedia.com/LCS/2019_Season/Summer_Season'
+
 #url = 'https://lol.gamepedia.com/OPL/2019_Season/Split_2'
-#url = 'https://lol.gamepedia.com/TCL/2019_Season/Winter_Season'
-#url = 'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Spring_Season'
-url = 'https://lol.gamepedia.com/LMS/2019_Season/Summer_Season'
+#url = 'https://lol.gamepedia.com/LFL/2019_Season/Summer_Season'
+#url = 'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season'
 #url = 'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season'
 #url = 'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season'
+
 response = requests.get(url)
 html = response.content
 
@@ -79,7 +79,7 @@ for link in soup.find_all('a', attrs={'href': re.compile("matchhistory")}):
 #This section retrieves data from each match history link
 outfile = open("./LeagueData.csv", "w")
 writer = csv.writer(outfile)
-writer.writerow(['Date', 'Team 1', 'Team 2', 'First Blood', 'First Dragon', 'First Turret', 'First Inhibitor', 'First Baron', 'Winner', 'Loser'])
+writer.writerow(['Date', 'Game', 'Blue Team', 'Red Team', 'First Blood', 'First Turret',  'First Dragon', 'First Inhibitor', 'First Baron', 'Winner', 'Loser'])
 
 count = 1
 previous_game_data = ['1','2','3']
@@ -94,12 +94,30 @@ for link in matchHistoryLinks:
 
         soup = BeautifulSoup(page_source, 'html.parser')
 
+        siteRegion = soup.find(attrs={'class':'region'}).text
         gameDate = soup.find("div", {"id": "binding-699"}).text # Date the match was played
+        
+        gameDate = gameDate.split("/")
+
+        if siteRegion == 'EU West':
+            gameDate = [gameDate[2], gameDate[1], gameDate[0]]
+        elif siteRegion == 'Westeuropa':
+            gameDate = [gameDate[2], gameDate[0], gameDate[1]]
+        elif siteRegion == 'North America': 
+            gameDate = [gameDate[2], gameDate[0], gameDate[1]]
+        else:
+            print("New region")
+            print(siteRegion)
+
+        gameDate = ('/'.join(gameDate))
+        print("Game date printed is: " + gameDate)
+
+
         team1 = (soup.find('div', attrs={"id": "champion-nameplate-16"}).text).split() # Team 1 name
         team2 = (soup.find('div', attrs={"id": "champion-nameplate-138"}).text).split() # Team 2 name
         gameWinner = soup.find('div', attrs={'class':'game-conclusion'}).text # Winner/Loser
 
-        if gameDate == previous_game_data[0] and team1[0].strip() == previous_game_data[1] or team1[0].strip() == previous_game_data[2] and team2[0].strip() == previous_game_data[1] or team2[0].strip() == previous_game_data[2]:
+        if (gameDate == previous_game_data[0]) and (team1[0].strip() == previous_game_data[1] or team1[0].strip() == previous_game_data[2]) and (team2[0].strip() == previous_game_data[1] or team2[0].strip() == previous_game_data[2]):
             if gameCount == 1:
                 gameCount = 2
             elif gameCount == 2:
@@ -170,22 +188,8 @@ for link in matchHistoryLinks:
         # Append to file
         gameData = []
 
-        # print('Debug')
-        # print(gameDate)
-    #     print(gameDate.strip())
-    #     print(team1[0].strip())
-    #     print(team2[0].strip())
-    #     print('First Blood')
-    #     print(firstDragon[0].strip())
-    #     print(firstTurret[0].strip())
-    # #    print(inhibitorData)
-    #     print(firstInhibitor[0].strip())
-    # #    print(baronData)
-    #     print(firstBaron[0].strip())
-    #     print(gameWinner[0].strip())
-
         try:
-            gameData.append([gameDate.strip(), team1[0].strip(), team2[0].strip(), firstBlood, firstDragon[0].strip(), firstTurret[0].strip(), firstInhibitor[0].strip(), firstBaron[0].strip(), gameWinner[0].strip(), gameLoser[0].strip()])
+            gameData.append([gameDate.strip(), gameCount, team1[0].strip(), team2[0].strip(), firstBlood, firstTurret[0].strip(), firstDragon[0].strip(), firstInhibitor[0].strip(), firstBaron[0].strip(), gameWinner[0].strip(), gameLoser[0].strip()])
             previous_game_data = [gameDate.strip(), team1[0].strip(), team2[0].strip()]
         except IndexError:
             gameData.append(['Index out of bound error'])

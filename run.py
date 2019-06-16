@@ -8,5 +8,3 @@ for (index, line) in enumerate(file_object):
 		processed_game = process_game(line.strip())
 		r = requests.post("https://lck-tracking.herokuapp.com/api/v1/games", json={"game": processed_game})
 		print(r.status_code)
-
-

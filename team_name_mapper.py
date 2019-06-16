@@ -10,7 +10,44 @@ get_name = {
   'g2' : 'G2 Esports',
   'sk' : 'SK Gaming',
   'spy' : 'Splyce',
-  's04' : 'Schalke 04'
+  's04' : 'Schalke 04',
+  'lgc' : 'Legacy',
+  'grv' : 'Gravitas',
+  'mmm' : 'MAMMOTH',
+  'bmr' : 'Bombers',
+  'av' : 'Avant Gaming',
+  'ord' : 'ORDER',
+  'dw' : 'Dire Wolves',
+  'chf' : 'Chiefs Esports Club',
+  'svp' : 'Splyce Vipers',
+  'emz' : 'eMonkeyz',
+  'mrs' : 'Movistar Riders',
+  'x6' : 'x6tence',
+  'gia' : 'Vodafone Giants',
+  'pgm' : 'Penguins',
+  'mad' : 'MAD Lions',
+  'g2h' : 'G2 Heretics',
+  's2v' : 'S2V Esports',
+  'ogb' : 'Origen BCN',
+  'tq' : 'Team Queso',
+  'grf' : 'Griffin',
+  'sb' : 'SANDBOX Gaming',
+  'gen' : 'Gen.G',
+  'jag' : 'Jin Air Green Wings',
+  'kz' : 'KINGZONE DragonX',
+  'skt' : 'SK Telecom T1',
+  'kt' : 'KT Rolster',
+  'dwg' : 'DAMWON Gaming',
+  'hle' : 'Hanwha Life Esports',
+  'af' : 'Afreeca Freecs',
+  'msf.p' : 'Misfits Premier',
+  'sly' : 'Solary',
+  'ldlc' : 'LDLC',
+  'mces' : 'Team MCES',
+  'go' : 'Gamers Origin',
+  'aaa' : 'against All authority',
+  'rog' : 'ROG Esport',
+  'vit.b' : 'Vitality.Bee'
 }
 
 def convert_name(short_name):
@@ -49,18 +86,23 @@ def create_game():
 def process_game(game):
 	game_data = create_game()
 	data = game.split(',')
-	game_data['first_blood_team_id'] = get_team_id_by_name(data[3])
-	game_data['first_turret_team_id'] = get_team_id_by_name(data[5])	
-	game_data['first_dragon_team_id'] = get_team_id_by_name(data[4])
-	game_data['first_baron_team_id'] = get_team_id_by_name(data[7])
-	game_data['winner_id'] = get_team_id_by_name(data[8])
-	game_data['loser_id'] = get_team_id_by_name(data[9])
-	game_data['red_side_team_id'] = get_team_id_by_name(data[2])
-	game_data['blue_side_team_id'] = get_team_id_by_name(data[1])
-	game_data['game_number'] = 1
-	game_data['date'] = data[0]
+
 	game_data['league_id'] = 2
 	game_data['split_id'] = 2
+	game_data['date'] = data[0]
+	game_data['game_number'] = data[1]
+	game_data['blue_side_team_id'] = get_team_id_by_name(data[2])
+	game_data['red_side_team_id'] = get_team_id_by_name(data[3])
+	if data[4] != '':
+		game_data['first_blood_team_id'] = get_team_id_by_name(data[4])
+	if data[5] != '':
+		game_data['first_turret_team_id'] = get_team_id_by_name(data[5])	
+	if data[6] != '':	
+		game_data['first_dragon_team_id'] = get_team_id_by_name(data[6])
+	if data[8] != '':
+		game_data['first_baron_team_id'] = get_team_id_by_name(data[8])		
+	game_data['winner_id'] = get_team_id_by_name(data[9])
+	game_data['loser_id'] = get_team_id_by_name(data[10])
 	return game_data
 
 
