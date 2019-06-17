@@ -4,6 +4,7 @@ import re
 import time
 import sys
 import json
+import os
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -14,7 +15,7 @@ import timeit
 
 start = timeit.default_timer()
 
-def get_page_source(link):
+def get_page_source (link):
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--incognito')
@@ -35,7 +36,7 @@ def get_page_source(link):
 
     return driver.page_source, page_loaded
 
-def process_data(split_objective_data, blue_team, red_team):
+def process_data (split_objective_data, blue_team, red_team):
     split_data = []
 
     for entries in split_objective_data:
@@ -56,24 +57,38 @@ def process_data(split_objective_data, blue_team, red_team):
             else:
                 return red_team
 
-def check_if_match_exists (dateOfMatch, blueTeam, redTeam):
+def check_if_match_exists (gameDate, blueTeam, redTeam):
     with open('gamesPlayed.json') as json_file:
         data = json.load(json_file)
         #print(data)
         for game in data:
             db_date = ((game['date'].split('T', 1)[0]).split("-"))        
             db_date = ('/'.join(db_date))
-            if (db_date == dateOfMatch) and ((game['teams'][0]['name'] == blueTeam) or (game['teams'][1]['name'] == blueTeam)) and ((game['teams'][0]['name'] == redTeam) or (game['teams'][1]['name'] == redTeam)):
+
+            # print('Check here')
+            # print(db_date == gameDate)
+            # print((game['teams'][0]['name'] == blueTeam) or (game['teams'][1]['name'] == blueTeam))
+            # print((game['teams'][0]['name'] == redTeam) or (game['teams'][1]['name'] == redTeam))
+
+            if (db_date == gameDate) and ((game['teams'][0]['name'] == blueTeam) or (game['teams'][1]['name'] == blueTeam)) and ((game['teams'][0]['name'] == redTeam) or (game['teams'][1]['name'] == redTeam)):
                 does_exist = True
                 return does_exist
 
-# This section locates all of the match history links
-url = 'https://lol.gamepedia.com/LCS/2019_Season/Summer_Season'
+def load_db_match_history ():
+    earliest_split_start_date = '2019-01-01'
+    latest_split_end_date = '2020-12-31'
+    collect_game_history = ["curl ", "'", "https://lck-tracking.herokuapp.com/api/v1/games?start=", earliest_split_start_date, "&end=", latest_split_end_date, "'", " | json_pp > gamesPlayed.json"]
+    os.system(''.join(collect_game_history))
 
+print("Loading database match history")
+load_db_match_history()
+
+# This section locates all of the match history links
+#url = 'https://lol.gamepedia.com/LCS/2019_Season/Summer_Season'
 #url = 'https://lol.gamepedia.com/OPL/2019_Season/Split_2'
 #url = 'https://lol.gamepedia.com/LFL/2019_Season/Summer_Season'
 #url = 'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season'
-#url = 'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season'
+url = 'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season'
 #url = 'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season'
 
 response = requests.get(url)
@@ -121,6 +136,12 @@ for link in matchHistoryLinks:
             print("New region")
             print(siteRegion)
 
+        if len(gameDate[1]) == 1:
+            gameDate[1] = '0' + gameDate[1] 
+
+        if len(gameDate[2]) == 1:
+            gameDate[2] = '0' + gameDate[2] 
+
         gameDate = ('/'.join(gameDate))
         print("Game date printed is: " + gameDate)
 
@@ -128,6 +149,9 @@ for link in matchHistoryLinks:
         team1 = (soup.find('div', attrs={"id": "champion-nameplate-16"}).text).split() # Team 1 name
         team2 = (soup.find('div', attrs={"id": "champion-nameplate-138"}).text).split() # Team 2 name
         gameWinner = soup.find('div', attrs={'class':'game-conclusion'}).text # Winner/Loser
+
+        testTeam1 = team1[0].strip()
+        testTeam2 = team2[0].strip()
 
         if (gameDate == previous_game_data[0]) and (team1[0].strip() == previous_game_data[1] or team1[0].strip() == previous_game_data[2]) and (team2[0].strip() == previous_game_data[1] or team2[0].strip() == previous_game_data[2]):
             if gameCount == 1:
@@ -140,6 +164,24 @@ for link in matchHistoryLinks:
                 gameCount = 5
         else:
             gameCount = 1
+
+        # Go through main page and collect dates for each week, check those teams against the database
+
+        print('Test info')
+        print(gameDate)
+        testDate = '2019/06/08'
+        testTeam1 = 'G2 Esports'
+        testTeam2 = 'Splyce'
+        print(testTeam1)
+        print(testTeam2)
+     #   if team1[0].strip() == 'G2' and team2[0].strip() == 'SPY':
+#        does_match_already_exist = check_if_match_exists(gameDate, testTeam1, testTeam2)
+        does_match_already_exist = check_if_match_exists(gameDate, testTeam2, testTeam2)
+        print(does_match_already_exist)
+        if does_match_already_exist == True:
+            print("Already exists")
+        else:
+            print("New data!")
 
         print(gameDate + ' ' + team1[0].strip() + ' ' + team2[0].strip() + ' ' + 'Game: ' + str(gameCount))
 

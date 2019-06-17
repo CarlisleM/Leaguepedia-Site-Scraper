@@ -3,7 +3,6 @@ import json
 def check_if_exists (dateOfMatch, blueTeam, redTeam):
 	with open('gamesPlayed.json') as json_file:
 		data = json.load(json_file)
-		#print(data)
 		for game in data:
 			db_date = ((game['date'].split('T', 1)[0]).split("-"))        
 			db_date = ('/'.join(db_date))
