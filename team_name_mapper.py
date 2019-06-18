@@ -1,5 +1,82 @@
 import json
 
+get_month = {
+  'January' : '01',
+  'February' : '02',
+  'March' : '03',
+  'April' : '04',
+  'May' : '05',
+  'June' : '06',
+  'July' : '07',
+  'Auguest'    : '08',
+  'September': '09',
+  'October'    : '10',
+  'November' : '11',
+  'December' : '12'
+}
+
+get_lck_name = {
+  'grf' : 'Griffin',
+  'sb' : 'SANDBOX Gaming',
+  'gen' : 'Gen.G',
+  'jag' : 'Jin Air Green Wings',
+  'kz' : 'KINGZONE DragonX',
+  'skt' : 'SK Telecom T1',
+  'kt' : 'KT Rolster',
+  'dwg' : 'DAMWON Gaming',
+  'hle' : 'Hanwha Life Esports',
+  'af' : 'Afreeca Freecs'
+}
+
+get_lec_name = {
+  'msf' : 'Misfits',
+  'xl' : 'Excel Esports',
+  'rge' : 'Rogue',
+  'vit' : 'Team Vitality',
+  'fnc' : 'Fnatic',
+  'og' : 'Origen',
+  'g2' : 'G2 Esports',
+  'sk' : 'SK Gaming',
+  'spy' : 'Splyce',
+  's04' : 'Schalke 04'
+}
+
+get_lvp_name = {
+  'svp' : 'Splyce Vipers',
+  'emz' : 'eMonkeyz',
+  'mrs' : 'Movistar Riders',
+  'x6' : 'x6tence',
+  'gia' : 'Vodafone Giants',
+  'pgm' : 'Penguins',
+  'mad' : 'MAD Lions',
+  'g2h' : 'G2 Heretics',
+  's2v' : 'S2V Esports',
+  'ogb' : 'Origen BCN',
+  'tq' : 'Team Queso'
+}
+
+get_opl_name = {
+  'lgc' : 'Legacy',
+  'grv' : 'Gravitas',
+  'mmm' : 'MAMMOTH',
+  'bmr' : 'Bombers',
+  'av' : 'Avant Gaming',
+  'ord' : 'ORDER',
+  'dw' : 'Dire Wolves',
+  'chf' : 'Chiefs Esports Club'
+}
+
+get_lfl_name = {
+  'msf.p' : 'Misfits Premier',
+  'sly' : 'Solary',
+  'ldlc' : 'LDLC',
+  'mces' : 'Team MCES',
+  'go' : 'Gamers Origin',
+  'aaa' : 'against All authority',
+  'rog' : 'ROG Esport',
+  'vit.b' : 'Vitality.Bee'
+}
+
 get_name = {
   'msf' : 'Misfits',
   'xl' : 'Excel Esports',
@@ -59,10 +136,8 @@ def get_team_id_by_name(short_name):
 
 	with open('teams.json') as json_file:
 		data = json.load(json_file)
-		#print(data)
 
 		for team in data:
-			#print(team)
 			if currentTeam == team['name']:
 				return team['id']
 

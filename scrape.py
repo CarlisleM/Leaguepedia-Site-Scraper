@@ -60,15 +60,9 @@ def process_data (split_objective_data, blue_team, red_team):
 def check_if_match_exists (gameDate, blueTeam, redTeam):
     with open('gamesPlayed.json') as json_file:
         data = json.load(json_file)
-        #print(data)
         for game in data:
             db_date = ((game['date'].split('T', 1)[0]).split("-"))        
             db_date = ('/'.join(db_date))
-
-            # print('Check here')
-            # print(db_date == gameDate)
-            # print((game['teams'][0]['name'] == blueTeam) or (game['teams'][1]['name'] == blueTeam))
-            # print((game['teams'][0]['name'] == redTeam) or (game['teams'][1]['name'] == redTeam))
 
             if (db_date == gameDate) and ((game['teams'][0]['name'] == blueTeam) or (game['teams'][1]['name'] == blueTeam)) and ((game['teams'][0]['name'] == redTeam) or (game['teams'][1]['name'] == redTeam)):
                 does_exist = True
@@ -88,7 +82,7 @@ load_db_match_history()
 #url = 'https://lol.gamepedia.com/OPL/2019_Season/Split_2'
 #url = 'https://lol.gamepedia.com/LFL/2019_Season/Summer_Season'
 #url = 'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season'
-url = 'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season'
+url = 'https://lol.gamepedia.com/TCL/2019_Season/Winter_Season'
 #url = 'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season'
 
 response = requests.get(url)
