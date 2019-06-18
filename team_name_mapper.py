@@ -77,6 +77,14 @@ get_lfl_name = {
   'vit.b' : 'Vitality.Bee'
 }
 
+get_league_and_split = {
+  'LCK' : '1',
+  'LEC' : '2',
+  'OPL' : '3',
+  'LFL' : '4',
+  'LVP' : '5'
+}
+
 get_name = {
   'msf' : 'Misfits',
   'xl' : 'Excel Esports',

@@ -54,10 +54,10 @@ def get_page_source (link):
     return driver.page_source, main_site_region
 
 #url = 'https://lol.gamepedia.com/LCK/2019_Season/Spring_Season'
-#url = 'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season'
+url = 'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season'
 #url = 'https://lol.gamepedia.com/LEC/2019_Season/Spring_Season'
 #url = 'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season'
-url = 'https://lol.gamepedia.com/OPL/2019_Season/Split_1'
+#url = 'https://lol.gamepedia.com/OPL/2019_Season/Split_1'
 #url = 'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season'
 league = url.split("/")
 league = league[3]
@@ -161,5 +161,6 @@ for match in match_data:
         print(match)
     count = count+1
 
+print(matches_to_scrape)
 print("Finished")
 
