@@ -10,7 +10,8 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver.common.keys import Keys
 from team_name_mapper import get_month, get_team_id_by_name, get_lck_name, get_lec_name, get_lvp_name, get_opl_name, get_lfl_name, get_league_and_split
 import timeit
 
@@ -30,13 +31,17 @@ def get_page_source (link):
     show_all = driver.find_element_by_xpath('//*[@id="matchlist-show-all"]')
     show_all.click()
 
-    try:
-        change_date_format = driver.find_element_by_xpath('//*[@data-toggler-show="ofl-toggle-2-3"]')
-        main_site_region = "regular"
-    except NoSuchElementException: 
-        change_date_format = driver.find_element_by_xpath('//*[@data-toggler-show="ofl-toggle-3-3"]')
-        main_site_region = "not regular"
-    change_date_format.click()
+    if league == 'LVP_SuperLiga_Orange' or league == 'LEC':
+        print("No need to change")
+        main_site_region = "Other"
+    else:
+        try:
+            change_date_format = driver.find_element_by_xpath('//*[@data-toggler-show="ofl-toggle-2-3"]')
+            main_site_region = "regular"
+        except NoSuchElementException: 
+            change_date_format = driver.find_element_by_xpath('//*[@data-toggler-show="ofl-toggle-3-3"]')
+            main_site_region = "not regular"
+        change_date_format.click()
 
     return driver.page_source, main_site_region
 
@@ -110,32 +115,37 @@ def load_db_match_history ():
 print("Loading database match history")
 #load_db_match_history()
 
-
+# LCK Button
+# Dates per page differ 
 
 list_of_urls_to_scrape = [
-    #'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season',
+    'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season',
     'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season',
-    #'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season',
-    #'https://lol.gamepedia.com/LFL/2019_Season/Summer_Season',
-    'https://lol.gamepedia.com/OPL/2019_Season/Split_2'
+    'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season',
+    'https://lol.gamepedia.com/OPL/2019_Season/Split_2',
+    'https://lol.gamepedia.com/LFL/2019_Season/Summer_Season'
 ]
-
-outfile = open("./LeagueData.csv", "w")
-writer = csv.writer(outfile)
-writer.writerow(['Date', 'Game', 'Blue Team', 'Red Team', 'First Blood', 'First Turret',  'First Dragon', 'First Inhibitor', 'First Baron', 'Winner', 'Loser'])
-
 
 for url in list_of_urls_to_scrape:
 
-    # Scrape the main page to obtain a list of teams and dates of their matches
-    #url = 'https://lol.gamepedia.com/LCK/2019_Season/Spring_Season'
-    #url = 'https://lol.gamepedia.com/LEC/2019_Season/Spring_Season'
-    #url = 'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season'
-    #url = 'https://lol.gamepedia.com/OPL/2019_Season/Split_1'
-    #url = 'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season'
-    #url = 'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season'
     league = url.split("/")
     league = league[3]
+
+    if league == 'LCK':
+        get_team_name_from_league = get_lck_name
+    elif league == 'LEC':
+        get_team_name_from_league = get_lec_name
+    elif league == 'OPL':
+        get_team_name_from_league = get_opl_name
+    elif league == 'LFL':
+         get_team_name_from_league = get_lfl_name
+    elif league == 'LVP':
+         get_team_name_from_league = get_lvp_name
+
+    outfile = "./" + league + " Data.csv"
+    outfile = open(outfile, "w")
+    writer = csv.writer(outfile)
+    writer.writerow(['Date', 'Game', 'Blue Team', 'Red Team', 'First Blood', 'First Turret',  'First Dragon', 'First Inhibitor', 'First Baron', 'Winner', 'Loser'])
 
     print('Scraping ' + league +' main page')
     
@@ -153,16 +163,24 @@ for url in list_of_urls_to_scrape:
 
     for week in range(1, 15):
 
+        needs_to_add_one = False
+
         dates_played = []
         if main_site_region == "regular":
             week_dates = 'ml-allw ml-w' + str(week) + ' matchlist-date ofl-toggle-2-3 ofl-toggler-2-all'
+                         
+        elif main_site_region == "not regular":
+            week_dates = 'ml-allw ml-w' + str(week) + ' matchlist-date ofl-toggle-3-3 ofl-toggler-3-all'    
         else:
-            week_dates = 'ml-allw ml-w' + str(week) + ' matchlist-date ofl-toggle-3-3 ofl-toggler-3-all'
+            week_dates = 'ml-allw ml-w' + str(week) + ' matchlist-date matchlist-you-date ofl-toggle-2-1 ofl-toggle-2-2 ofl-toggler-2-all'
+
         week_dates = soup.find_all(attrs={'class': week_dates})
 
         for date in week_dates:
             split_dates_played = (date.text).split("-")
             dates_played.append(split_dates_played[2])
+
+        print(dates_played)
         
         class_string_1 = 'ml-allw ml-w' + str(week) + ' ml-row'
         class_string_2 = 'ml-allw ml-w' + str(week) + ' ml-row matchlist-newday'
@@ -172,53 +190,46 @@ for url in list_of_urls_to_scrape:
         for game in games:
             split_game_data = (game.text).split()
 
-            split_date_team = split_game_data[4].split(",") # Not sure this is needed anymore
-            
-            team_1_day = split_game_data[0]
+            team_1_and_date_string = split_game_data[0]
+            team_2_string = split_game_data[4]
 
-            if team_1_day[-2:] not in dates_played:
-                needs_correcting = True # Date does not match the date played
+            for idx, character in enumerate(team_1_and_date_string):
+              if team_1_and_date_string[:idx].lower() in get_team_name_from_league:
+                team_1 = team_1_and_date_string[:idx].lower() 
+#                print('Team 1 matches')
+
+            for idx, character in enumerate(team_2_string):
+              if team_2_string[-idx:].lower() in get_team_name_from_league:
+                 team_2 = team_2_string[-idx:].lower()
+#                 print('Team 2 matches')
+
+            if (team_1_and_date_string[-2:] in dates_played) and needs_to_add_one == False:
+                day_match_played = team_1_and_date_string[-2:]
+#                print("we gucci")
             else:
-                if league == 'LCK':
-                    if team_1_day[:-4].lower() not in get_lck_name:
-                        needs_correcting = True
+                if str(int(team_1_and_date_string[-2:])+1) in dates_played:
+                    day_match_played = str(int(team_1_and_date_string[-2:])+1)
+                    needs_to_add_one = True
+#                    print("We are gucci after +1")
+                else:
+                    if ('0' + team_1_and_date_string[-1:] in dates_played) and needs_to_add_one == False:
+                        day_match_played = '0' + team_1_and_date_string[-1:]
+#                        print("Also gucci after inserting a 0")
                     else:
-                        needs_correcting = False
-                elif league == 'LEC':
-                    if team_1_day[:-4].lower() not in get_lec_name:
-                        needs_correcting = True
-                    else:
-                        needs_correcting = False
-                elif league == 'LVP':
-                    if team_1_day[:-4].lower() not in get_lvp_name:
-                        needs_correcting = True
-                    else:
-                        needs_correcting = False
-                elif league == 'OPL':
-                    if team_1_day[:-4].lower() not in get_opl_name:
-                        needs_correcting = True
-                    else:
-                        needs_correcting = False
-                elif league == 'LFL':
-                    if team_1_day[:-4].lower() not in get_opl_name:
-                        needs_correcting = True
-                    else:
-                        needs_correcting = False
+                        if '0' + str(int(team_1_and_date_string[-1:])+1) in dates_played:
+                            day_match_played = '0' + str(int(team_1_and_date_string[-1:])+1)
+                            needs_to_add_one = True
 
-            if needs_correcting == True:
-                team_1_day = team_1_day[:-1] + '0' + team_1_day[-1:]
-                
-            day = team_1_day[-2:]
-            team_1 = team_1_day[:-4]
+#                            print("We went the full way but finally matched")
 
-            month = split_game_data[1]
-            month = convert_month(month)
-            year = split_game_data[2]
+            month_match_played = split_game_data[1]
+            month_match_played = convert_month(month_match_played)
+            year_match_played = split_game_data[2]
 
-            game_date = [year, month, day]
+            game_date = [year_match_played, month_match_played, day_match_played]
             game_date = ('/'.join(game_date))
 
-            team_2 = split_date_team[0][25:]    # Remove all characters before team 2's name
+            print(game_date + ' ' + team_1 + ' ' + team_2)
 
             match_data.append([game_date, team_1, team_2])
 
@@ -236,17 +247,10 @@ for url in list_of_urls_to_scrape:
             print(match)
         count = count+1
 
-    #print(matches_to_scrape)
     print("Finished")
 
     # Compile a list of natchhistory links
     print('Starting to scrape individual ' + league + ' games')
-    # This section locates all of the match history links
-    #url = 'https://lol.gamepedia.com/LCS/2019_Season/Summer_Season'
-    #url = 'https://lol.gamepedia.com/LFL/2019_Season/Summer_Season'
-    #url = 'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season'
-    #url = 'https://lol.gamepedia.com/TCL/2019_Season/Winter_Season'
-    #url = 'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season'
 
     response = requests.get(url)
     html = response.content
