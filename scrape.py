@@ -12,7 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.keys import Keys
-from team_name_mapper import get_month, get_team_id_by_name, get_lck_name, get_lec_name, get_lvp_name, get_opl_name, get_lfl_name, get_league_and_split
+from team_name_mapper import *
 import timeit
 
 start = timeit.default_timer()
@@ -107,23 +107,20 @@ def convert_month(month_name):
 
 def load_db_match_history ():
     earliest_split_start_date = '2019-01-01'
-    latest_split_end_date = '2020-12-31'
+    latest_split_end_date = '2019-12-31'
     collect_game_history = ["curl ", "'", "https://lck-tracking.herokuapp.com/api/v1/games?start=", earliest_split_start_date, "&end=", latest_split_end_date, "'", " | json_pp > gamesPlayed.json"]
     os.system(''.join(collect_game_history))
 
 # Downloads the database of matches already committed
 print("Loading database match history")
-#load_db_match_history()
-
-# LCK Button
-# Dates per page differ 
+load_db_match_history()
 
 list_of_urls_to_scrape = [
-    'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season',
     'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season',
     'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season',
-    'https://lol.gamepedia.com/OPL/2019_Season/Split_2',
-    'https://lol.gamepedia.com/LFL/2019_Season/Summer_Season'
+    'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season',
+    'https://lol.gamepedia.com/LFL/2019_Season/Summer_Season',
+    'https://lol.gamepedia.com/OPL/2019_Season/Split_2'
 ]
 
 for url in list_of_urls_to_scrape:
@@ -131,6 +128,9 @@ for url in list_of_urls_to_scrape:
     league = url.split("/")
     league = league[3]
 
+    league_id = get_league_id(league)
+    split_id = get_split_id(league)
+    
     if league == 'LCK':
         get_team_name_from_league = get_lck_name
     elif league == 'LEC':
@@ -139,20 +139,20 @@ for url in list_of_urls_to_scrape:
         get_team_name_from_league = get_opl_name
     elif league == 'LFL':
          get_team_name_from_league = get_lfl_name
-    elif league == 'LVP':
+    elif league == 'LVP_SuperLiga_Orange':
          get_team_name_from_league = get_lvp_name
 
     outfile = "./" + league + " Data.csv"
     outfile = open(outfile, "w")
     writer = csv.writer(outfile)
-    writer.writerow(['Date', 'Game', 'Blue Team', 'Red Team', 'First Blood', 'First Turret',  'First Dragon', 'First Inhibitor', 'First Baron', 'Winner', 'Loser'])
+    writer.writerow(['League', 'Split', 'Date', 'Game', 'Blue Team', 'Red Team', 'First Blood', 'First Turret',  'First Dragon', 'First Inhibitor', 'First Baron', 'Winner', 'Loser'])
 
     print('Scraping ' + league +' main page')
-    
+
     page_info = get_page_source(url)
     page_source = page_info[0]
     main_site_region = page_info[1]
-    time.sleep(10)
+    time.sleep(5)
     soup = BeautifulSoup(page_source, 'html.parser')
 
     number_of_weeks = soup.find(attrs={"class": 'wikitable'})
@@ -160,12 +160,17 @@ for url in list_of_urls_to_scrape:
     number_of_weeks = len(number_of_weeks)+1 # Maybe find a better way to count this but not needed
 
     match_data = []
+    game_count = []
+    matches_played_in_split = []
+    running_total_games = 0
+    current_counter = 0
 
     for week in range(1, 15):
 
         needs_to_add_one = False
 
         dates_played = []
+
         if main_site_region == "regular":
             week_dates = 'ml-allw ml-w' + str(week) + ' matchlist-date ofl-toggle-2-3 ofl-toggler-2-all'
                          
@@ -189,64 +194,66 @@ for url in list_of_urls_to_scrape:
 
         for game in games:
             split_game_data = (game.text).split()
-
-            team_1_and_date_string = split_game_data[0]
+            team_1_score_date = split_game_data[0]
             team_2_string = split_game_data[4]
 
-            for idx, character in enumerate(team_1_and_date_string):
-              if team_1_and_date_string[:idx].lower() in get_team_name_from_league:
-                team_1 = team_1_and_date_string[:idx].lower() 
-#                print('Team 1 matches')
-
+            for idx, character in enumerate(team_1_score_date):
+                if team_1_score_date[:idx].lower() in get_team_name_from_league:
+                    team_1 = team_1_score_date[:idx].lower() 
+                    team_1_score = team_1_score_date[idx:idx+2][:1]
+                    team_2_score = team_1_score_date[idx:idx+2][1:]
+                    set_game_count = int(team_1_score) + int(team_2_score)
+                    date_of_match = team_1_score_date[idx+2:]
+                    if league == 'LEC' or league == 'LVP_SuperLiga_Orange' or league == 'LFL':
+                        date_of_match = str(int(date_of_match)+1)
+                    if len(date_of_match) == 1:
+                        date_of_match = '0' + date_of_match
+                       
             for idx, character in enumerate(team_2_string):
-              if team_2_string[-idx:].lower() in get_team_name_from_league:
-                 team_2 = team_2_string[-idx:].lower()
-#                 print('Team 2 matches')
-
-            if (team_1_and_date_string[-2:] in dates_played) and needs_to_add_one == False:
-                day_match_played = team_1_and_date_string[-2:]
-#                print("we gucci")
-            else:
-                if str(int(team_1_and_date_string[-2:])+1) in dates_played:
-                    day_match_played = str(int(team_1_and_date_string[-2:])+1)
-                    needs_to_add_one = True
-#                    print("We are gucci after +1")
-                else:
-                    if ('0' + team_1_and_date_string[-1:] in dates_played) and needs_to_add_one == False:
-                        day_match_played = '0' + team_1_and_date_string[-1:]
-#                        print("Also gucci after inserting a 0")
-                    else:
-                        if '0' + str(int(team_1_and_date_string[-1:])+1) in dates_played:
-                            day_match_played = '0' + str(int(team_1_and_date_string[-1:])+1)
-                            needs_to_add_one = True
-
-#                            print("We went the full way but finally matched")
+                if team_2_string[-idx:].lower() in get_team_name_from_league:
+                    team_2 = team_2_string[-idx:].lower()
 
             month_match_played = split_game_data[1]
             month_match_played = convert_month(month_match_played)
             year_match_played = split_game_data[2]
 
-            game_date = [year_match_played, month_match_played, day_match_played]
+            game_date = [year_match_played, month_match_played, date_of_match]
             game_date = ('/'.join(game_date))
 
-            print(game_date + ' ' + team_1 + ' ' + team_2)
+            print(game_date + ' ' + team_1 + ' ' + team_1_score + ' : ' + team_2_score + ' ' + team_2 + ' total games: ' + str(set_game_count))
 
+            running_total_games = running_total_games + set_game_count
             match_data.append([game_date, team_1, team_2])
+            game_count.append(set_game_count)
+            matches_played_in_split.append(running_total_games)
+            current_counter = current_counter + 1
 
     matches_to_scrape = []
     count = 0
 
-    for match in match_data:
+    for idx, match in enumerate(match_data):
         does_match_already_exist = check_if_match_exists(match[0], get_team_id_by_name(match[1]), get_team_id_by_name(match[2]))
         if does_match_already_exist == True:
             pass
         else:
             print("New data!")
-            print(count)
-            matches_to_scrape.append(count)
             print(match)
-        count = count+1
-
+            matches_to_scrape.append(matches_played_in_split[idx-1])
+            if game_count[idx] == 2:
+                matches_to_scrape.append(matches_played_in_split[idx-1]+1)
+            elif game_count[idx] == 3:
+                matches_to_scrape.append(matches_played_in_split[idx-1]+1)
+                matches_to_scrape.append(matches_played_in_split[idx-1]+2)
+            elif game_count[idx] == 4:
+                matches_to_scrape.append(matches_played_in_split[idx-1]+1)
+                matches_to_scrape.append(matches_played_in_split[idx-1]+2)
+                matches_to_scrape.append(matches_played_in_split[idx-1]+3)
+            elif game_count[idx] == 5:
+                matches_to_scrape.append(matches_played_in_split[idx-1]+1)
+                matches_to_scrape.append(matches_played_in_split[idx-1]+2)
+                matches_to_scrape.append(matches_played_in_split[idx-1]+3)
+                matches_to_scrape.append(matches_played_in_split[idx-1]+4)
+ 
     print("Finished")
 
     # Compile a list of natchhistory links
@@ -263,15 +270,12 @@ for url in list_of_urls_to_scrape:
         matchHistoryLinks.append(link.get('href'))
 
     count = 1
+    counter = 0
     previous_game_data = ['1','2','3']
 
-
-    counter = 0
-
     # Retrieve data from each match history link
-
     for link in matchHistoryLinks:
-        print(counter)
+        #print(counter)
         if counter in matches_to_scrape:
             print("scraping: " + str(counter))
             page_info = get_match_history_source(link)
@@ -381,7 +385,7 @@ for url in list_of_urls_to_scrape:
                 gameData = []
 
                 try:
-                    gameData.append([gameDate.strip(), gameCount, team1[0].strip(), team2[0].strip(), firstBlood, firstTurret[0].strip(), firstDragon[0].strip(), firstInhibitor[0].strip(), firstBaron[0].strip(), gameWinner[0].strip(), gameLoser[0].strip()])
+                    gameData.append([league_id, split_id, gameDate.strip(), gameCount, team1[0].strip(), team2[0].strip(), firstBlood, firstTurret[0].strip(), firstDragon[0].strip(), firstInhibitor[0].strip(), firstBaron[0].strip(), gameWinner[0].strip(), gameLoser[0].strip()])
                     previous_game_data = [gameDate.strip(), team1[0].strip(), team2[0].strip()]
                 except IndexError:
                     gameData.append(['Index out of bound error'])

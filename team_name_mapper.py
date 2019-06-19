@@ -77,12 +77,20 @@ get_lfl_name = {
   'vit.b' : 'Vitality.Bee'
 }
 
-get_league_and_split = {
+get_league = {
   'LCK' : '1',
   'LEC' : '2',
   'OPL' : '3',
   'LFL' : '4',
-  'LVP' : '5'
+  'LVP_SuperLiga_Orange' : '5'
+}
+
+get_split = {
+  'LCK' : '1',
+  'LEC' : '2',
+  'OPL' : '3',
+  'LFL' : '4',
+  'LVP_SuperLiga_Orange' : '5'
 }
 
 get_name = {
@@ -135,6 +143,12 @@ get_name = {
   'vit.b' : 'Vitality.Bee'
 }
 
+def get_league_id(league):
+  return get_league[league]
+
+def get_split_id(league):
+  return get_split[league]  
+
 def convert_name(short_name):
 	return get_name[short_name.lower()]
 
@@ -170,22 +184,22 @@ def process_game(game):
 	game_data = create_game()
 	data = game.split(',')
 
-	game_data['league_id'] = 2
-	game_data['split_id'] = 2
-	game_data['date'] = data[0]
-	game_data['game_number'] = data[1]
-	game_data['blue_side_team_id'] = get_team_id_by_name(data[2])
-	game_data['red_side_team_id'] = get_team_id_by_name(data[3])
+	game_data['league_id'] = data[0]
+	game_data['split_id'] = data[1]
+	game_data['date'] = data[2]
+	game_data['game_number'] = data[3]
+	game_data['blue_side_team_id'] = get_team_id_by_name(data[4])
+	game_data['red_side_team_id'] = get_team_id_by_name(data[5])
 	if data[4] != '':
-		game_data['first_blood_team_id'] = get_team_id_by_name(data[4])
+		game_data['first_blood_team_id'] = get_team_id_by_name(data[6])
 	if data[5] != '':
-		game_data['first_turret_team_id'] = get_team_id_by_name(data[5])	
+		game_data['first_turret_team_id'] = get_team_id_by_name(data[7])	
 	if data[6] != '':	
-		game_data['first_dragon_team_id'] = get_team_id_by_name(data[6])
+		game_data['first_dragon_team_id'] = get_team_id_by_name(data[8])
 	if data[8] != '':
-		game_data['first_baron_team_id'] = get_team_id_by_name(data[8])		
-	game_data['winner_id'] = get_team_id_by_name(data[9])
-	game_data['loser_id'] = get_team_id_by_name(data[10])
+		game_data['first_baron_team_id'] = get_team_id_by_name(data[10])		
+	game_data['winner_id'] = get_team_id_by_name(data[11])
+	game_data['loser_id'] = get_team_id_by_name(data[12])
 	return game_data
 
 
