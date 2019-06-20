@@ -15,8 +15,6 @@ from selenium.webdriver.common.keys import Keys
 from team_name_mapper import *
 import timeit
 
-start = timeit.default_timer()
-
 # Get main page (league) source
 def get_page_source (link):
     options = webdriver.ChromeOptions()
@@ -24,63 +22,43 @@ def get_page_source (link):
     options.add_argument('--disable-extensions')
     options.add_argument('--incognito')
     options.add_argument('--headless')
-    driverLocation = str(sys.argv[1])
-    driver = webdriver.Chrome(executable_path=driverLocation, options=options)
+    driver_location = str(sys.argv[1])
+    driver = webdriver.Chrome(executable_path=driver_location, options=options)
     driver.get(link)
-
-    show_all = driver.find_element_by_xpath('//*[@id="matchlist-show-all"]')
-    show_all.click()
-
-    if league == 'LVP_SuperLiga_Orange' or league == 'LEC':
-        print("No need to change")
-        main_site_region = "Other"
+    if test == "something":
+        show_all = driver.find_element_by_xpath('//*[@id="matchlist-show-all"]')
+        show_all.click()
+        time.sleep(5)   # Probably not needed at all or can be greatly reduced
+        return driver.page_source
     else:
+        wait = 10 # seconds
         try:
-            change_date_format = driver.find_element_by_xpath('//*[@data-toggler-show="ofl-toggle-2-3"]')
-            main_site_region = "regular"
-        except NoSuchElementException: 
-            change_date_format = driver.find_element_by_xpath('//*[@data-toggler-show="ofl-toggle-3-3"]')
-            main_site_region = "not regular"
-        change_date_format.click()
+            #wait_for_graph = WebDriverWait(driver, wait).until(EC.presence_of_element_located((By.ID, 'event-graph-987')))
+            wait_for_graph = WebDriverWait(driver, wait).until(EC.presence_of_element_located((By.CLASS_NAME, 'event-graph')))
+            page_loaded = 'ready'
+        except TimeoutException:
+            page_loaded = 'not ready'
+            print ("Loading took too long!")
+        return driver.page_source, page_loaded    
 
-    return driver.page_source, main_site_region
+def check_if_match_exists (game_date, game_number, blue_team, red_team):
+    with open('gamesPlayed.json') as json_file:
+        data = json.load(json_file)
+        for game in data:
+            db_date = (game['date'].split('T', 1)[0])        
+            if (db_date == game_date) and ((game['teams'][0]['id'] == blue_team) or (game['teams'][1]['id'] == blue_team)) and ((game['teams'][0]['id'] == red_team) or (game['teams'][1]['id'] == red_team)):                
+                does_exist = True
+                return does_exist
 
-# Get source of matchhistory page
-def get_match_history_source (link):
-    options = webdriver.ChromeOptions()
-    options.add_argument('--ignore-certificate-errors')
-    options.add_argument('--disable-extensions')    
-    options.add_argument('--incognito')
-    options.add_argument('--headless')
-    driverLocation = str(sys.argv[1])
-    driver = webdriver.Chrome(executable_path=driverLocation, options=options)
-
-    driver.get(link)
-
-    wait = 10 # seconds
-    try:
-        #wait_for_graph = WebDriverWait(driver, wait).until(EC.presence_of_element_located((By.ID, 'event-graph-987')))
-        wait_for_graph = WebDriverWait(driver, wait).until(EC.presence_of_element_located((By.CLASS_NAME, 'event-graph')))
-        page_loaded = 'ready'
-    except TimeoutException:
-        page_loaded = 'not ready'
-        print ("Loading took too long!")
-
-    return driver.page_source, page_loaded
-
-# Obtain statistics of the match
 def process_data (split_objective_data, blue_team, red_team):
     split_data = []
+    objective_timer = []
 
     for entries in split_objective_data:
         split_data.append(entries.split())
 
-    counter = 0
-    objective_timer = []
-
-    for rows in split_data:
-        objective_timer.append([re.sub("[^0-9.]", "", split_data[counter][4]), re.sub("[^0-9.]", "", split_data[counter][6])])
-        counter = counter+1
+    for idx, rows in enumerate(split_data):
+        objective_timer.append([re.sub("[^0-9.]", "", split_data[idx][4]), re.sub("[^0-9.]", "", split_data[idx][6])])
 
     for i in objective_timer:
         if i[0] == min(x[0] for x in objective_timer):
@@ -90,20 +68,8 @@ def process_data (split_objective_data, blue_team, red_team):
             else:
                 return red_team
 
-# Check if the match exists in the current database
-def check_if_match_exists (gameDate, blueTeam, redTeam):
-    with open('gamesPlayed.json') as json_file:
-        data = json.load(json_file)
-        for game in data:
-            db_date = ((game['date'].split('T', 1)[0]).split("-"))        
-            db_date = ('/'.join(db_date))
-
-            if (db_date == gameDate) and ((game['teams'][0]['id'] == blueTeam) or (game['teams'][1]['id'] == blueTeam)) and ((game['teams'][0]['id'] == redTeam) or (game['teams'][1]['id'] == redTeam)):
-                does_exist = True
-                return does_exist
-
 def convert_month(month_name):
-    return get_month[month_name]                
+    return get_month[month_name]         
 
 def load_db_team_names ():
     collect_teams = ['curl https://lck-tracking.herokuapp.com/api/v1/teams | json_pp > teams.json']
@@ -112,26 +78,29 @@ def load_db_match_history ():
     earliest_split_start_date = '2019-01-01'
     latest_split_end_date = '2019-12-31'
     collect_game_history = ["curl ", "'", "https://lck-tracking.herokuapp.com/api/v1/games?start=", earliest_split_start_date, "&end=", latest_split_end_date, "'", " | json_pp > gamesPlayed.json"]
-    os.system(''.join(collect_game_history))
+    os.system(''.join(collect_game_history))   
 
+start = timeit.default_timer()
 # Downloads the database of matches already committed
 print("Loading teams from database")
 #load_db_team_names()
 print("Loading match history from database")
 #load_db_match_history()
 
-list_of_urls_to_scrape = [
-    'https://lol.gamepedia.com/LMS/2019_Season/Spring_Season',
-    'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season',
-    'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season',
+list_of_leagues_to_scrape = [
     'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season',
     'https://lol.gamepedia.com/LFL/2019_Season/Summer_Season',
-    'https://lol.gamepedia.com/OPL/2019_Season/Split_2'
+    'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season',
+    'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season',
+    'https://lol.gamepedia.com/OPL/2019_Season/Split_2',
+    'https://lol.gamepedia.com/LMS/2019_Season/Spring_Season'
 ]
 
-for url in list_of_urls_to_scrape:
+for league_url in list_of_leagues_to_scrape:
 
-    league = url.split("/")
+    test = "something"
+
+    league = league_url.split("/")
     league = league[3]
 
     league_id = get_league_id(league)
@@ -157,44 +126,16 @@ for url in list_of_urls_to_scrape:
 
     print('Scraping ' + league +' main page')
 
-    page_info = get_page_source(url)
-    page_source = page_info[0]
-    main_site_region = page_info[1]
-    time.sleep(5)
+    page_source = get_page_source(league_url)
+    
     soup = BeautifulSoup(page_source, 'html.parser')
 
-    number_of_weeks = soup.find(attrs={"class": 'wikitable'})
-    number_of_weeks = number_of_weeks.find_all("th")
-    number_of_weeks = len(number_of_weeks)+1 # Maybe find a better way to count this but not needed
-
     match_data = []
-    game_count = []
-    matches_played_in_split = [0]
-    running_total_games = 0
-    current_counter = 0
+    matches_to_scrape = []
 
+    # Get list of matches for entire split (dates, teams and score)
     for week in range(1, 15):
 
-        needs_to_add_one = False
-
-        dates_played = []
-
-        if main_site_region == "regular":
-            week_dates = 'ml-allw ml-w' + str(week) + ' matchlist-date ofl-toggle-2-3 ofl-toggler-2-all'
-                         
-        elif main_site_region == "not regular":
-            week_dates = 'ml-allw ml-w' + str(week) + ' matchlist-date ofl-toggle-3-3 ofl-toggler-3-all'    
-        else:
-            week_dates = 'ml-allw ml-w' + str(week) + ' matchlist-date matchlist-you-date ofl-toggle-2-1 ofl-toggle-2-2 ofl-toggler-2-all'
-
-        week_dates = soup.find_all(attrs={'class': week_dates})
-
-        for date in week_dates:
-            split_dates_played = (date.text).split("-")
-            dates_played.append(split_dates_played[2])
-
-        print(dates_played)
-        
         class_string_1 = 'ml-allw ml-w' + str(week) + ' ml-row'
         class_string_2 = 'ml-allw ml-w' + str(week) + ' ml-row matchlist-newday'
 
@@ -207,211 +148,143 @@ for url in list_of_urls_to_scrape:
 
             for idx, character in enumerate(team_1_score_date):
                 if team_1_score_date[:idx].lower() in get_team_name_from_league:
-                    team_1 = team_1_score_date[:idx].lower() 
-                    team_1_score = team_1_score_date[idx:idx+2][:1]
-                    team_2_score = team_1_score_date[idx:idx+2][1:]
-                    set_game_count = int(team_1_score) + int(team_2_score)
+                    blue_team = team_1_score_date[:idx].lower() 
+                    blue_team_score = team_1_score_date[idx:idx+2][:1]
+                    red_team_score = team_1_score_date[idx:idx+2][1:]
+                    set_game_count = int(blue_team_score) + int(red_team_score)
                     date_of_match = team_1_score_date[idx+2:]
-                    if league == 'LEC' or league == 'LVP_SuperLiga_Orange' or league == 'LFL':
-                        date_of_match = str(int(date_of_match)+1)
                     if len(date_of_match) == 1:
                         date_of_match = '0' + date_of_match
                        
             for idx, character in enumerate(team_2_string):
                 if team_2_string[-idx:].lower() in get_team_name_from_league:
-                    team_2 = team_2_string[-idx:].lower()
+                    red_team = team_2_string[-idx:].lower()
 
             month_match_played = split_game_data[1]
             month_match_played = convert_month(month_match_played)
             year_match_played = split_game_data[2]
 
             game_date = [year_match_played, month_match_played, date_of_match]
-            game_date = ('/'.join(game_date))
+            game_date = ('-'.join(game_date))
 
-            print(game_date + ' ' + team_1 + ' ' + team_1_score + ' : ' + team_2_score + ' ' + team_2 + ' total games: ' + str(set_game_count))
+            # Team 1 starts blue side and alternates for each game after the first
+            match_data.append([game_date, '1', blue_team, red_team]) 
+            if set_game_count >= 2:
+                match_data.append([game_date, '2', red_team, blue_team])
+            if set_game_count >= 3:
+                match_data.append([game_date, '3', blue_team, red_team])
+            if set_game_count >= 4:
+                match_data.append([game_date, '4', red_team, blue_team])
+            if set_game_count == 5:
+                match_data.append([game_date, '5', blue_team, red_team])
 
-            running_total_games = running_total_games + set_game_count
-            match_data.append([game_date, team_1, team_2])
-            game_count.append(set_game_count)
-            matches_played_in_split.append(running_total_games)
-            current_counter = current_counter + 1
-
-    matches_to_scrape = []
-    count = 0
+#            print(game_date + ' ' + blue_team + ' ' + blue_team_score + ' : ' + red_team_score + ' ' + red_team)
 
     for idx, match in enumerate(match_data):
-        does_match_already_exist = check_if_match_exists(match[0], get_team_id_by_name(match[1]), get_team_id_by_name(match[2]))
+        does_match_already_exist = check_if_match_exists(match[0], match[1], get_team_id_by_name(match[2]), get_team_id_by_name(match[3]))
         if does_match_already_exist == True:
-            pass
+            match_data[idx].append("don't scrape")
         else:
-            print("New data!")
-            print(match)
-            print(idx)
-
-            matches_to_scrape.append(matches_played_in_split[idx])
-            if game_count[idx] == 2:
-                matches_to_scrape.append(matches_played_in_split[idx]+1)
-            elif game_count[idx] == 3:
-                matches_to_scrape.append(matches_played_in_split[idx]+1)
-                matches_to_scrape.append(matches_played_in_split[idx]+2)
-            elif game_count[idx] == 4:
-                matches_to_scrape.append(matches_played_in_split[idx]+1)
-                matches_to_scrape.append(matches_played_in_split[idx]+2)
-                matches_to_scrape.append(matches_played_in_split[idx]+3)
-            elif game_count[idx] == 5:
-                matches_to_scrape.append(matches_played_in_split[idx-1]+1)
-                matches_to_scrape.append(matches_played_in_split[idx-1]+2)
-                matches_to_scrape.append(matches_played_in_split[idx-1]+3)
-                matches_to_scrape.append(matches_played_in_split[idx-1]+4)
- 
-    print(matches_played_in_split)
-    print(matches_to_scrape)
-    print(game_count)
-
-    print("Finished")
+            match_data[idx].append("scrape")
 
     # Compile a list of natchhistory links
     print('Starting to scrape individual ' + league + ' games')
-
-    response = requests.get(url)
+    response = requests.get(league_url)
     html = response.content
-
     soup = BeautifulSoup(html, 'html.parser')
 
-    matchHistoryLinks = []
+    # Compile a list of natchhistory links
+    for idx, link in enumerate(soup.find_all('a', attrs={'href': re.compile("matchhistory")})):
+        match_data[idx].append(link.get('href'))
 
-    for link in soup.find_all('a', attrs={'href': re.compile("matchhistory")}):
-        matchHistoryLinks.append(link.get('href'))
+    test = "something else"
 
-    count = 1
-    counter = 0
-    previous_game_data = ['1','2','3']
+    # Collect match statistics (First blood, riftherald, dragon, turret, baron, inhibitor, winner)
+    if idx == len(match_data)-1:
+        print("Continue because the number of match links matches the number of games found")
+        # Retrieve data from each match history link
+        for match in match_data:
+            if match[4] == 'scrape':
+                print(match)
+                print('Scraping...')
+                blue_team = match[2]
+                red_team = match[3]
+                page_info = get_page_source(match[5])
+                page_source = page_info[0]
+                page_status = page_info[1]
 
-    # Retrieve data from each match history link
-    for link in matchHistoryLinks:
-        #print(counter)
-        if counter in matches_to_scrape:
-            print("scraping: " + str(counter))
-            page_info = get_match_history_source(link)
-            page_source = page_info[0]
-            page_status = page_info[1]
+                if page_status == 'ready':
 
-            if page_status == 'ready':
+                    soup = BeautifulSoup(page_source, 'html.parser')
+                    game_winner = soup.find('div', attrs={'class':'game-conclusion'}).text # Winner/Loser
 
-                soup = BeautifulSoup(page_source, 'html.parser')
+                    print(match[0] + ' ' + blue_team + ' ' + red_team)
 
-                siteRegion = soup.find(attrs={'class':'region'}).text
-                gameDate = soup.find("div", {"id": "binding-699"}).text # Date the match was played
-                
-                gameDate = gameDate.split("/")
+                    if str(game_winner.strip()) in 'VICTORY':
+                        game_winner = blue_team
+                        game_loser = red_team
+                    else:
+                        game_winner = red_team
+                        game_loser = blue_team
 
-                if siteRegion == 'EU West':
-                    gameDate = [gameDate[2], gameDate[1], gameDate[0]]
-                elif siteRegion == 'Westeuropa':
-                    gameDate = [gameDate[2], gameDate[0], gameDate[1]]
-                elif siteRegion == 'North America': 
-                    gameDate = [gameDate[2], gameDate[0], gameDate[1]]
+                    # Obtain dragon, turret, and first blood info
+                    objective_data = []
+
+                    for lines in soup.findAll('image'):
+                        objective_data.append(str(lines))
+
+                    riftherald_data = [a for a in objective_data if "riftherald" in a]
+                    dragon_data = [b for b in objective_data if "dragon" in b]
+                    baron_data = [c for c in objective_data if "baron" in c]
+                    turret_data = turret_data = [e for e in objective_data if "turret" in e]
+                    inhibitor_data = [d for d in objective_data if "inhibitor" in d]
+
+                    # First Blood
+                    first_blood = []
+
+                    rows = soup.find_all('tr')
+                    for row in rows:          # Print all occurrences
+                        first_blood.append(row.get_text())
+
+                    first_blood = re.sub(r'[a-zA-Z]+', '', first_blood[5], re.I)
+                    first_blood = first_blood.split('●')[0]
+
+                    if int(first_blood.count('○')) < 5:
+                        first_blood = blue_team
+                    else:
+                        first_blood = red_team
+
+                    if not dragon_data:
+                        first_dragon = ' '
+                    else: 
+                        first_dragon = process_data(dragon_data, blue_team, red_team)
+
+                    if not turret_data:
+                        first_turret = ' '
+                    else:
+                        first_turret = process_data(turret_data, blue_team, red_team)
+                    
+                    if not baron_data:
+                        first_baron = ' '
+                    else:
+                        first_baron = process_data(baron_data, blue_team, red_team)
+
+                    if not inhibitor_data:
+                        first_inhibitor = ' '
+                    else:
+                        first_inhibitor = process_data(inhibitor_data, blue_team, red_team)
+
+                    # Append to file
+                    game_data = []
+                    game_data.append([league_id, split_id, match[0], match[1], blue_team, red_team, first_blood, first_turret, first_dragon, first_inhibitor, first_baron, game_winner, game_loser])
+                    writer.writerows(game_data)
+                    print('Done')
                 else:
-                    print("New region")
-                    print(siteRegion)
+                    print('Skipped')
+    else:
+        print("It seems a matchhistory link for one of the games is missing")
 
-                if len(gameDate[1]) == 1:
-                    gameDate[1] = '0' + gameDate[1] 
 
-                if len(gameDate[2]) == 1:
-                    gameDate[2] = '0' + gameDate[2] 
-
-                gameDate = ('/'.join(gameDate))
-
-                team1 = (soup.find('div', attrs={"id": "champion-nameplate-16"}).text).split() # Team 1 name
-                team2 = (soup.find('div', attrs={"id": "champion-nameplate-138"}).text).split() # Team 2 name
-                gameWinner = soup.find('div', attrs={'class':'game-conclusion'}).text # Winner/Loser
-#               if (gameDate == previous_game_data[0]) and (team1[0].strip() == previous_game_data[1] or team1[0].strip() == previous_game_data[2]) and (team2[0].strip() == previous_game_data[1] or team2[0].strip() == previous_game_data[2]):
-                if (team1[0].strip() == previous_game_data[1] or team1[0].strip() == previous_game_data[2]) and (team2[0].strip() == previous_game_data[1] or team2[0].strip() == previous_game_data[2]):
-                    if gameCount == 1:
-                        gameCount = 2
-                    elif gameCount == 2:
-                        gameCount = 3
-                    elif gameCount == 3:
-                        gameCount = 4
-                    elif gameCount == 4:
-                        gameCount = 5
-                else:
-                    gameCount = 1
-
-                print(gameDate + ' ' + team1[0].strip() + ' ' + team2[0].strip() + ' ' + 'Game: ' + str(gameCount))
-
-                if str(gameWinner.strip()) in 'VICTORY':
-                    gameWinner = team1
-                    gameLoser = team2
-                else:
-                    gameWinner = team2
-                    gameLoser = team1
-
-                # Obtain dragon, turret, and first blood info
-                objectiveData = []
-
-                for lines in soup.findAll('image'):
-                    objectiveData.append(str(lines))
-
-                riftheraldData = [a for a in objectiveData if "riftherald" in a]
-                dragonData = [b for b in objectiveData if "dragon" in b]
-                baronData = [c for c in objectiveData if "baron" in c]
-                turretData = turretData = [e for e in objectiveData if "turret" in e]
-                inhibitorData = [d for d in objectiveData if "inhibitor" in d]
-
-                # First Blood
-                collectStatistics = []
-
-                rows = soup.find_all('tr')
-                for row in rows:          # Print all occurrences
-                    collectStatistics.append(row.get_text())
-
-                determineFB = re.sub(r'[a-zA-Z]+', '', collectStatistics[5], re.I)
-                firstBlood = determineFB.split('●')[0]
-
-                if int(firstBlood.count('○')) < 5:
-                    firstBlood = team1[0].strip()
-                else:
-                    firstBlood = team2[0].strip()
-
-                if not dragonData:
-                    firstDragon = ' '
-                else: 
-                    firstDragon = process_data(dragonData, team1, team2)
-
-                if not turretData:
-                    firstTurret = ' '
-                else:
-                    firstTurret = process_data(turretData, team1, team2)
-                
-                if not baronData:
-                    firstBaron = ' '
-                else:
-                    firstBaron = process_data(baronData, team1, team2)
-
-                if not inhibitorData:
-                    firstInhibitor = ' '
-                else:
-                    firstInhibitor = process_data(inhibitorData, team1, team2)
-
-                # Append to file
-                gameData = []
-
-                try:
-                    gameData.append([league_id, split_id, gameDate.strip(), gameCount, team1[0].strip(), team2[0].strip(), firstBlood, firstTurret[0].strip(), firstDragon[0].strip(), firstInhibitor[0].strip(), firstBaron[0].strip(), gameWinner[0].strip(), gameLoser[0].strip()])
-                    previous_game_data = [gameDate.strip(), team1[0].strip(), team2[0].strip()]
-                except IndexError:
-                    gameData.append(['Index out of bound error'])
-                    print('index out of bounds error')
-
-                writer.writerows(gameData)
-
-                print('Done: ' + str(count))
-                count = count+1
-            else:
-                print('Skipped')
-        counter = counter+1
 
 print('Finished')
 stop = timeit.default_timer()
