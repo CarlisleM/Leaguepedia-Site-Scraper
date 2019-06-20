@@ -105,6 +105,9 @@ def check_if_match_exists (gameDate, blueTeam, redTeam):
 def convert_month(month_name):
     return get_month[month_name]                
 
+def load_db_team_names ():
+    collect_teams = ['curl https://lck-tracking.herokuapp.com/api/v1/teams | json_pp > teams.json']
+
 def load_db_match_history ():
     earliest_split_start_date = '2019-01-01'
     latest_split_end_date = '2019-12-31'
@@ -112,10 +115,13 @@ def load_db_match_history ():
     os.system(''.join(collect_game_history))
 
 # Downloads the database of matches already committed
-print("Loading database match history")
-load_db_match_history()
+print("Loading teams from database")
+#load_db_team_names()
+print("Loading match history from database")
+#load_db_match_history()
 
 list_of_urls_to_scrape = [
+    'https://lol.gamepedia.com/LMS/2019_Season/Spring_Season',
     'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season',
     'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season',
     'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season',
@@ -141,6 +147,8 @@ for url in list_of_urls_to_scrape:
          get_team_name_from_league = get_lfl_name
     elif league == 'LVP_SuperLiga_Orange':
          get_team_name_from_league = get_lvp_name
+    elif league == 'LMS':
+         get_team_name_from_league = get_lms_name
 
     outfile = "./" + league + " Data.csv"
     outfile = open(outfile, "w")
@@ -161,7 +169,7 @@ for url in list_of_urls_to_scrape:
 
     match_data = []
     game_count = []
-    matches_played_in_split = []
+    matches_played_in_split = [0]
     running_total_games = 0
     current_counter = 0
 
@@ -238,22 +246,28 @@ for url in list_of_urls_to_scrape:
         else:
             print("New data!")
             print(match)
-            matches_to_scrape.append(matches_played_in_split[idx-1])
+            print(idx)
+
+            matches_to_scrape.append(matches_played_in_split[idx])
             if game_count[idx] == 2:
-                matches_to_scrape.append(matches_played_in_split[idx-1]+1)
+                matches_to_scrape.append(matches_played_in_split[idx]+1)
             elif game_count[idx] == 3:
-                matches_to_scrape.append(matches_played_in_split[idx-1]+1)
-                matches_to_scrape.append(matches_played_in_split[idx-1]+2)
+                matches_to_scrape.append(matches_played_in_split[idx]+1)
+                matches_to_scrape.append(matches_played_in_split[idx]+2)
             elif game_count[idx] == 4:
-                matches_to_scrape.append(matches_played_in_split[idx-1]+1)
-                matches_to_scrape.append(matches_played_in_split[idx-1]+2)
-                matches_to_scrape.append(matches_played_in_split[idx-1]+3)
+                matches_to_scrape.append(matches_played_in_split[idx]+1)
+                matches_to_scrape.append(matches_played_in_split[idx]+2)
+                matches_to_scrape.append(matches_played_in_split[idx]+3)
             elif game_count[idx] == 5:
                 matches_to_scrape.append(matches_played_in_split[idx-1]+1)
                 matches_to_scrape.append(matches_played_in_split[idx-1]+2)
                 matches_to_scrape.append(matches_played_in_split[idx-1]+3)
                 matches_to_scrape.append(matches_played_in_split[idx-1]+4)
  
+    print(matches_played_in_split)
+    print(matches_to_scrape)
+    print(game_count)
+
     print("Finished")
 
     # Compile a list of natchhistory links

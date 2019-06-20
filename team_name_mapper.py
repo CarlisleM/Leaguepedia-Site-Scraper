@@ -77,12 +77,24 @@ get_lfl_name = {
   'vit.b' : 'Vitality.Bee'
 }
 
+get_lms_name = {
+  'hka' : 'Hong Kong Attitude',
+  'mad' : 'MAD Team',
+  'fw' : 'Flash Wolves',
+  'ahq' : 'ahq e-Sports club',
+  'alf' : 'Alpha Esports',
+  'jt' : 'J Team',
+  'grx' : 'G-Rex',
+  'dg' : 'Dragon Gate'
+}
+
 get_league = {
   'LCK' : '1',
   'LEC' : '2',
   'OPL' : '3',
   'LFL' : '4',
-  'LVP_SuperLiga_Orange' : '5'
+  'LVP_SuperLiga_Orange' : '5',
+  'LMS' : '6'
 }
 
 get_split = {
@@ -90,7 +102,8 @@ get_split = {
   'LEC' : '2',
   'OPL' : '3',
   'LFL' : '4',
-  'LVP_SuperLiga_Orange' : '5'
+  'LVP_SuperLiga_Orange' : '5',
+  'LMS' : '6'
 }
 
 get_name = {
@@ -140,7 +153,15 @@ get_name = {
   'go' : 'Gamers Origin',
   'aaa' : 'against All authority',
   'rog' : 'ROG Esport',
-  'vit.b' : 'Vitality.Bee'
+  'vit.b' : 'Vitality.Bee',
+  'hka' : 'Hong Kong Attitude',
+  'mad' : 'MAD Team',
+  'fw' : 'Flash Wolves',
+  'ahq' : 'ahq e-Sports club',
+  'alf' : 'Alpha Esports',
+  'jt' : 'J Team',
+  'grx' : 'G-Rex',
+  'dg' : 'Dragon Gate'
 }
 
 def get_league_id(league):
@@ -190,13 +211,13 @@ def process_game(game):
 	game_data['game_number'] = data[3]
 	game_data['blue_side_team_id'] = get_team_id_by_name(data[4])
 	game_data['red_side_team_id'] = get_team_id_by_name(data[5])
-	if data[4] != '':
+	if data[6] != '':
 		game_data['first_blood_team_id'] = get_team_id_by_name(data[6])
-	if data[5] != '':
+	if data[7] != '':
 		game_data['first_turret_team_id'] = get_team_id_by_name(data[7])	
-	if data[6] != '':	
+	if data[7] != '':	
 		game_data['first_dragon_team_id'] = get_team_id_by_name(data[8])
-	if data[8] != '':
+	if data[10] != '':
 		game_data['first_baron_team_id'] = get_team_id_by_name(data[10])		
 	game_data['winner_id'] = get_team_id_by_name(data[11])
 	game_data['loser_id'] = get_team_id_by_name(data[12])
