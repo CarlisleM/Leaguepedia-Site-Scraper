@@ -326,8 +326,8 @@ for url in list_of_urls_to_scrape:
                 team1 = (soup.find('div', attrs={"id": "champion-nameplate-16"}).text).split() # Team 1 name
                 team2 = (soup.find('div', attrs={"id": "champion-nameplate-138"}).text).split() # Team 2 name
                 gameWinner = soup.find('div', attrs={'class':'game-conclusion'}).text # Winner/Loser
-
-                if (gameDate == previous_game_data[0]) and (team1[0].strip() == previous_game_data[1] or team1[0].strip() == previous_game_data[2]) and (team2[0].strip() == previous_game_data[1] or team2[0].strip() == previous_game_data[2]):
+#               if (gameDate == previous_game_data[0]) and (team1[0].strip() == previous_game_data[1] or team1[0].strip() == previous_game_data[2]) and (team2[0].strip() == previous_game_data[1] or team2[0].strip() == previous_game_data[2]):
+                if (team1[0].strip() == previous_game_data[1] or team1[0].strip() == previous_game_data[2]) and (team2[0].strip() == previous_game_data[1] or team2[0].strip() == previous_game_data[2]):
                     if gameCount == 1:
                         gameCount = 2
                     elif gameCount == 2:
