@@ -122,7 +122,7 @@ for league_url in list_of_leagues_to_scrape:
     outfile = "./" + league + " Data.csv"
     outfile = open(outfile, "w")
     writer = csv.writer(outfile)
-    writer.writerow(['League', 'Split', 'Date', 'Game', 'Blue Team', 'Red Team', 'First Blood', 'First Turret',  'First Dragon', 'First Inhibitor', 'First Baron', 'Winner', 'Loser'])
+    writer.writerow(['League', 'Split', 'Date', 'Game', 'Blue Team', 'Red Team', 'First Blood', 'First Tower',  'First Dragon', 'First Inhibitor', 'First Baron', 'Winner', 'Loser'])
 
     print('Scraping ' + league +' main page')
 
@@ -199,7 +199,7 @@ for league_url in list_of_leagues_to_scrape:
 
     test = "something else"
 
-    # Collect match statistics (First blood, riftherald, dragon, turret, baron, inhibitor, winner)
+    # Collect match statistics (First blood, riftherald, dragon, tower, baron, inhibitor, winner)
     if idx == len(match_data)-1:
         print("Continue because the number of match links matches the number of games found")
         # Retrieve data from each match history link
@@ -227,8 +227,9 @@ for league_url in list_of_leagues_to_scrape:
                         game_winner = red_team
                         game_loser = blue_team
 
-                    # Obtain dragon, turret, and first blood info
+                    # Obtain first blood, riftherald, dragon, tower, inhibitor, and baron info
                     objective_data = []
+                    victim_data = []
 
                     for lines in soup.findAll('image'):
                         objective_data.append(str(lines))
@@ -236,7 +237,6 @@ for league_url in list_of_leagues_to_scrape:
                     riftherald_data = [a for a in objective_data if "riftherald" in a]
                     dragon_data = [b for b in objective_data if "dragon" in b]
                     baron_data = [c for c in objective_data if "baron" in c]
-                    turret_data = turret_data = [e for e in objective_data if "turret" in e]
                     inhibitor_data = [d for d in objective_data if "inhibitor" in d]
 
                     # First Blood
@@ -254,16 +254,20 @@ for league_url in list_of_leagues_to_scrape:
                     else:
                         first_blood = red_team
 
+                    for victim in soup.findAll('div', attrs={'class':'victim'}):
+                        victim_data.append(victim)
+
+                    for victim in victim_data:
+                        if 'turret_100' in str(victim_data): # Red team got first tower
+                            first_tower = red_team
+                        elif 'turret_200' in str(victim_data): # Blue team got first tower
+                            first_tower = blue_team   
+
                     if not dragon_data:
                         first_dragon = ' '
                     else: 
                         first_dragon = process_data(dragon_data, blue_team, red_team)
 
-                    if not turret_data:
-                        first_turret = ' '
-                    else:
-                        first_turret = process_data(turret_data, blue_team, red_team)
-                    
                     if not baron_data:
                         first_baron = ' '
                     else:
@@ -276,7 +280,7 @@ for league_url in list_of_leagues_to_scrape:
 
                     # Append to file
                     game_data = []
-                    game_data.append([league_id, split_id, match[0], match[1], blue_team, red_team, first_blood, first_turret, first_dragon, first_inhibitor, first_baron, game_winner, game_loser])
+                    game_data.append([league_id, split_id, match[0], match[1], blue_team, red_team, first_blood, first_tower, first_dragon, first_inhibitor, first_baron, game_winner, game_loser])
                     writer.writerows(game_data)
                     print('Done')
                 else:
