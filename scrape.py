@@ -25,7 +25,7 @@ def get_page_source (link):
     driver_location = str(sys.argv[1])
     driver = webdriver.Chrome(executable_path=driver_location, options=options)
     driver.get(link)
-    if test == "something":
+    if page_type == "main page":
         show_all = driver.find_element_by_xpath('//*[@id="matchlist-show-all"]')
         show_all.click()
         time.sleep(5)   # Probably not needed at all or can be greatly reduced
@@ -98,7 +98,7 @@ list_of_leagues_to_scrape = [
 
 for league_url in list_of_leagues_to_scrape:
 
-    test = "something"
+    page_type = "main page"
 
     league = league_url.split("/")
     league = league[3]
@@ -153,6 +153,7 @@ for league_url in list_of_leagues_to_scrape:
                     red_team_score = team_1_score_date[idx:idx+2][1:]
                     set_game_count = int(blue_team_score) + int(red_team_score)
                     date_of_match = team_1_score_date[idx+2:]
+                    # Could +1 here to the date to align with australian dates
                     if len(date_of_match) == 1:
                         date_of_match = '0' + date_of_match
                        
@@ -178,8 +179,6 @@ for league_url in list_of_leagues_to_scrape:
             if set_game_count == 5:
                 match_data.append([game_date, '5', blue_team, red_team])
 
-#            print(game_date + ' ' + blue_team + ' ' + blue_team_score + ' : ' + red_team_score + ' ' + red_team)
-
     for idx, match in enumerate(match_data):
         does_match_already_exist = check_if_match_exists(match[0], match[1], get_team_id_by_name(match[2]), get_team_id_by_name(match[3]))
         if does_match_already_exist == True:
@@ -197,7 +196,7 @@ for league_url in list_of_leagues_to_scrape:
     for idx, link in enumerate(soup.find_all('a', attrs={'href': re.compile("matchhistory")})):
         match_data[idx].append(link.get('href'))
 
-    test = "something else"
+    page_type = "matchhistory page"
 
     # Collect match statistics (First blood, riftherald, dragon, tower, baron, inhibitor, winner)
     if idx == len(match_data)-1:
@@ -254,6 +253,7 @@ for league_url in list_of_leagues_to_scrape:
                     else:
                         first_blood = red_team
 
+                    # First Tower
                     for victim in soup.findAll('div', attrs={'class':'victim'}):
                         victim_data.append(victim)
 
@@ -288,9 +288,6 @@ for league_url in list_of_leagues_to_scrape:
     else:
         print("It seems a matchhistory link for one of the games is missing")
 
-
-
 print('Finished')
 stop = timeit.default_timer()
-
 print('Time: ', stop - start) 
