@@ -215,18 +215,10 @@ def process_game(game):
 		game_data['first_blood_team_id'] = get_team_id_by_name(data[6])
 	if data[7] != '':
 		game_data['first_turret_team_id'] = get_team_id_by_name(data[7])	
-	if data[7] != '':	
+	if data[8] != '':	
 		game_data['first_dragon_team_id'] = get_team_id_by_name(data[8])
 	if data[10] != '':
 		game_data['first_baron_team_id'] = get_team_id_by_name(data[10])		
 	game_data['winner_id'] = get_team_id_by_name(data[11])
 	game_data['loser_id'] = get_team_id_by_name(data[12])
 	return game_data
-
-
-
-
-
-
-
-

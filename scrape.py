@@ -14,7 +14,10 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 from team_name_mapper import *
 import timeit
+from datetime import datetime
+import pytz
 
+# /usr/local/bin/chromedriver
 # Get main page (league) source
 def get_page_source (link):
     options = webdriver.ChromeOptions()
@@ -35,11 +38,11 @@ def get_page_source (link):
         try:
             #wait_for_graph = WebDriverWait(driver, wait).until(EC.presence_of_element_located((By.ID, 'event-graph-987')))
             wait_for_graph = WebDriverWait(driver, wait).until(EC.presence_of_element_located((By.CLASS_NAME, 'event-graph')))
-            page_loaded = 'ready'
+            page_status = 'ready'
         except TimeoutException:
-            page_loaded = 'not ready'
+            page_status = 'not ready'
             print ("Loading took too long!")
-        return driver.page_source, page_loaded    
+        return driver.page_source, page_status    
 
 def check_if_match_exists (game_date, game_number, blue_team, red_team):
     with open('gamesPlayed.json') as json_file:
@@ -88,12 +91,18 @@ print("Loading match history from database")
 #load_db_match_history()
 
 list_of_leagues_to_scrape = [
-    'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season',
-    'https://lol.gamepedia.com/LFL/2019_Season/Summer_Season',
-    'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season',
-    'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season',
-    'https://lol.gamepedia.com/OPL/2019_Season/Split_2',
-    'https://lol.gamepedia.com/LMS/2019_Season/Spring_Season'
+    'https://lol.gamepedia.com/LCK/2019_Season/Spring_Season',
+    'https://lol.gamepedia.com/OPL/2019_Season/Split_1',
+    'https://lol.gamepedia.com/LMS/2019_Season/Spring_Season',
+    'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Spring_Season',
+    'https://lol.gamepedia.com/LEC/2019_Season/Spring_Season',
+    'https://lol.gamepedia.com/LFL/2019_Season/Spring_Season'
+#    'https://lol.gamepedia.com/OPL/2019_Season/Split_2',
+#    'https://lol.gamepedia.com/LVP_SuperLiga_Orange/2019_Season/Summer_Season',
+#    'https://lol.gamepedia.com/LMS/2019_Season/Summer_Season',
+#    'https://lol.gamepedia.com/LCK/2019_Season/Summer_Season',
+#    'https://lol.gamepedia.com/LFL/2019_Season/Summer_Season',
+#    'https://lol.gamepedia.com/LEC/2019_Season/Summer_Season'
 ]
 
 for league_url in list_of_leagues_to_scrape:
@@ -133,6 +142,11 @@ for league_url in list_of_leagues_to_scrape:
     match_data = []
     matches_to_scrape = []
 
+    original_time_of_match = ''
+    original_day_of_match = ''
+    previous_match_day = ''
+    previous_match_time = ''
+
     # Get list of matches for entire split (dates, teams and score)
     for week in range(1, 15):
 
@@ -153,20 +167,45 @@ for league_url in list_of_leagues_to_scrape:
                     red_team_score = team_1_score_date[idx:idx+2][1:]
                     set_game_count = int(blue_team_score) + int(red_team_score)
                     date_of_match = team_1_score_date[idx+2:]
-                    # Could +1 here to the date to align with australian dates
+                    time_of_match = team_2_string.split(':')
+                    time_of_match = time_of_match[1][2:]
+                    if date_of_match != original_day_of_match:
+                        original_day_of_match = date_of_match
+                        original_time_of_match = time_of_match
+                    else:
+                        if (previous_match_day == original_day_of_match) and (time_of_match > previous_match_time):
+                            pass
+                        else:
+                            date_of_match = str(int(date_of_match)+1)
                     if len(date_of_match) == 1:
                         date_of_match = '0' + date_of_match
-                       
+                    previous_match_time = time_of_match
+                    month_match_played = split_game_data[1]
+                    month_match_played = convert_month(month_match_played)
+                    year_match_played = split_game_data[2]
+                    game_date = [year_match_played, month_match_played, date_of_match]
+                    game_date = ('-'.join(game_date))
+
             for idx, character in enumerate(team_2_string):
                 if team_2_string[-idx:].lower() in get_team_name_from_league:
-                    red_team = team_2_string[-idx:].lower()
+                    red_team = team_2_string[-idx:].lower()      
 
-            month_match_played = split_game_data[1]
-            month_match_played = convert_month(month_match_played)
-            year_match_played = split_game_data[2]
+            # Convert to Australian timezone
+            utcmoment_naive = datetime.utcnow()
+            utcmoment = utcmoment_naive.replace(tzinfo=pytz.utc)
+            localFormat = "%Y-%m-%d %H:%M:%S"
+            localmoment_naive = datetime.strptime(game_date + ' ' + time_of_match + ':00:00', localFormat)
+            localtimezone = pytz.timezone('America/Los_Angeles')
 
-            game_date = [year_match_played, month_match_played, date_of_match]
-            game_date = ('-'.join(game_date))
+            localmoment = localtimezone.localize(localmoment_naive, is_dst=None)
+            utcmoment = localmoment.astimezone(pytz.utc)
+
+            timezones = ['Australia/Brisbane']
+
+            for tz in timezones:
+                localmoment_naive = utcmoment.astimezone(pytz.timezone(tz))
+               
+            game_date = str(localmoment_naive).split()[0]
 
             # Team 1 starts blue side and alternates for each game after the first
             match_data.append([game_date, '1', blue_team, red_team]) 
@@ -185,6 +224,8 @@ for league_url in list_of_leagues_to_scrape:
             match_data[idx].append("don't scrape")
         else:
             match_data[idx].append("scrape")
+            print("New data")
+            print(match)
 
     # Compile a list of natchhistory links
     print('Starting to scrape individual ' + league + ' games')
@@ -192,22 +233,44 @@ for league_url in list_of_leagues_to_scrape:
     html = response.content
     soup = BeautifulSoup(html, 'html.parser')
 
-    # Compile a list of natchhistory links
-    for idx, link in enumerate(soup.find_all('a', attrs={'href': re.compile("matchhistory")})):
-        match_data[idx].append(link.get('href'))
+    altered = 0
+    counter = 0
+    for link in soup.find_all('a', attrs={'href': re.compile("matchhistory")}):
+        if link.text == "Link":
+            match_data[counter].append(link.get('href'))
+            counter = counter+1
+        else:
+            print("Dont increase")
+            altered = altered+1
+
+    # for idx, link in enumerate(soup.find_all('a', attrs={'href': re.compile("matchhistory")})):
+    #     if link.text == "Link":
+    #         print(idx)
+    #         print(link)
+    #         print(match_data[idx])
+    #         match_data[idx].append(link.get('href'))
+    #     else:
+    #         idx = idx-1
 
     page_type = "matchhistory page"
 
     # Collect match statistics (First blood, riftherald, dragon, tower, baron, inhibitor, winner)
-    if idx == len(match_data)-1:
+    if len(soup.find_all('a', attrs={'href': re.compile("matchhistory")}))-altered == len(match_data):
         print("Continue because the number of match links matches the number of games found")
         # Retrieve data from each match history link
         for match in match_data:
             if match[4] == 'scrape':
-                print(match)
                 print('Scraping...')
-                blue_team = match[2]
-                red_team = match[3]
+
+                print(match)
+
+                # Reset variables to avoid wrong team being printed if the data cannot be found
+                first_blood = ' '
+                first_tower = ' '
+                first_dragon = ' '
+                first_baron = ' '
+                first_inhibitor = ' '
+
                 page_info = get_page_source(match[5])
                 page_source = page_info[0]
                 page_status = page_info[1]
@@ -215,9 +278,31 @@ for league_url in list_of_leagues_to_scrape:
                 if page_status == 'ready':
 
                     soup = BeautifulSoup(page_source, 'html.parser')
-                    game_winner = soup.find('div', attrs={'class':'game-conclusion'}).text # Winner/Loser
 
-                    print(match[0] + ' ' + blue_team + ' ' + red_team)
+                    player_team_names = soup.findAll('div', attrs={'class':'champion-nameplate-name'})
+                    for idx, player in enumerate(player_team_names):
+                        if idx == 0:
+                            blue_team = player.text.strip().split()[0].lower()
+                        if idx == 5:
+                            red_team = player.text.strip().split()[0].lower()
+
+                    if blue_team in match[2] and blue_team in match[3]:
+                        if red_team in match[3]:
+                            blue_team = match[2]
+                            red_team = match[3]
+                        else:
+                            red_team = teams[0]
+                            blue_team = teams[1]
+                    elif blue_team in str(match[2]):
+                        blue_team = match[2]
+                        red_team = match[3]
+                    else:
+                        red_team = match[2]
+                        blue_team = match[3]
+
+                    print("Date: " + match[0] + " Blue team: " + blue_team + " Red team: " + red_team)
+
+                    game_winner = soup.find('div', attrs={'class':'game-conclusion'}).text # Winner/Loser
 
                     if str(game_winner.strip()) in 'VICTORY':
                         game_winner = blue_team
@@ -280,8 +365,11 @@ for league_url in list_of_leagues_to_scrape:
 
                     # Append to file
                     game_data = []
-                    game_data.append([league_id, split_id, match[0], match[1], blue_team, red_team, first_blood, first_tower, first_dragon, first_inhibitor, first_baron, game_winner, game_loser])
-                    writer.writerows(game_data)
+                    game_data.append([league_id, split_id, match[0].replace('-','/'), match[1], blue_team, red_team, first_blood, first_tower, first_dragon.strip(), first_inhibitor.strip(), first_baron.strip(), game_winner, game_loser])
+                    if first_dragon.strip() == '' and first_inhibitor.strip() == '' and first_baron.strip() == '':
+                        print("The matchhistory for this match does not load properly and will not be written to file")
+                    else:
+                        writer.writerows(game_data)
                     print('Done')
                 else:
                     print('Skipped')
